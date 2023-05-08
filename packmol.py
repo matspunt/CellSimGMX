@@ -1,3 +1,11 @@
+import subprocess as sp
+import tempfile
+from distutils.spawn import find_executable
+import datetime
+import os
+import glob
+
+
 class PackmolExecuter:
     """
     Provides an interface for calling PACKMOL through Python.
@@ -77,3 +85,13 @@ class PackmolExecuter:
         except:
             print("Stopping the run. Please ensure PACKMOL is installed properly as the 'packmol' binary.")
             return
+
+
+#currently the class accepts the .inp as a string, so need to manually pass it as a string for now. But 
+# eventually going to have the string supplied by another class. 
+with open("two_bead_types_random.inp","r") as f:
+    input_string = f.read()
+    
+execute_packmol = PackmolExecuter()
+packmol_inp = input_string
+execute_packmol.run_packmol(packmol_inp)
