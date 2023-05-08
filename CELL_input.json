@@ -1,4 +1,5 @@
 {
+    "packmol_tolerance": 4,
     "number_of_cells": 1,
     "beads": {
         "A": 90,
@@ -6,5 +7,5 @@
         "N": 1
     },
     "initial_packing_shape": "sphere",
-    "cell_radius": 10
+    "cell_radius": 18
 }

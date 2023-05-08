@@ -22,6 +22,7 @@ class PackmolInput:
     def __init__(self, filename):
         with open(filename) as f:
             data = json.load(f)
+        self.tolerance = data["packmol_tolerance"]
         self.number_of_cells = (data["number_of_cells"])
         self.beads = data["beads"]
         self.init_shape = data["initial_packing_shape"]
@@ -32,7 +33,7 @@ class PackmolInput:
     def construct_bead_xyz(self):
         """
         Saves a .XYZ file for each individual bead in the CELL for PACKMOL input.
-        The number of beads for each type is read from the 'beads' parameter.
+        The name of the beads is read from the 'beads' parameter.
         """
         xyz = "1\n\nX         10.00000       10.00000       10.00000"
         bead_identities = []
@@ -51,13 +52,12 @@ class PackmolInput:
         Returns:
             inp (str): Packmol input file string. Is used in PackmolExecuter.run_packmol()
         """
-        inp = "tolerance 2\nfiletype xyz\noutput CELL.xyz\nmovebadrandom\n"
+        inp = f"tolerance {self.tolerance}\nfiletype xyz\noutput CELL.xyz\nmovebadrandom\n"
         for bead, number in self.beads.items():
             if bead != "N":
                 dr = self.cell_radius - 0.1
                 inp += f"\nstructure {bead}.xyz\n  number {number}\n  atoms 1\n    inside {self.init_shape} 0. 0. 0. {self.cell_radius}\n  end atoms\n  atoms 1\n    outside {self.init_shape} 0. 0. 0. {dr}\n  end atoms\nend structure\n\n"
         inp += f"structure N.xyz\n  number {self.beads['N']}\n  center\n  fixed 0. 0. 0. 0. 0. 0.\nend structure\n"
-        print(inp)
         return inp
 
 class PackmolExecuter:
@@ -124,6 +124,7 @@ class PackmolExecuter:
                 for file in glob.glob('*.xyz'):
                         os.remove(file)
 
+#We can read the JSON with the PACKMOL input class
 execute_packmol = PackmolExecuter()
 execute_packmol.run_packmol()
 
