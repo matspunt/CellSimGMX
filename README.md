@@ -15,3 +15,9 @@ TODO:
 >>>>>>> 8c8aa0e39825cdd93ab35bc6e99654105238f0c7
 - Gromacs_Run class, generalize simulation setup independent of folder structure (add .mdp parser!)
 - LAMMPS parser, figure out force field definitions in Martini --> use Moltemplate to prepare random Martini system. Or is Ksenia going to take care of this?
+
+Multiple cells:
+- Packing in a lattice or random orientation using either PACKMOL or gmx genconf. 
+
+MSD analysis:
+- Automated sanity checking --> talk about with Shreyas. 
