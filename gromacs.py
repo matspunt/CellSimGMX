@@ -3,18 +3,36 @@ import datetime
 import subprocess as sp
 from distutils.spawn import find_executable
 import shutil
+import sys
 
-class Gromacs_IO:
+from settings_parser import JSONParser
+from settings_parser import ForcefieldParserGMX
+
+class Gromacs_IO(JSONParser, ForcefieldParserGMX):
     """
     Methods:
     --------
+    
     convert_xyz_to_gro(xyz_file, gro_file):
         Converts an XYZ file to a GRO file         
 
-    build_GMX_top(gro_path, bond_types, lj_pairs):
-        Builds a GROMACS topology file (.itp) based on a given coordinate file (in .gro format). 
+    build_GMX_top(gro_path):
+        Builds a GROMACS topology file (.itp) based on a given coordinate file (in .gro format)
+        and the force field that is supplied. 
     """
-    @staticmethod
+
+    def __init__(self, json_directory, forcefield_directory):
+        JSONParser.__init__(self, json_directory)
+        ForcefieldParserGMX.__init__(self, forcefield_directory)
+        self.GMX_path = find_executable("gmx") #check whether GROMACS is available in the environment
+        
+        if self.GMX_path is not None:
+            print(f"\n\nUsing GROMACS version from: {self.GMX_path} \n")
+        else:
+            print(f"\n\nError: cannot find GROMACS (gmx) binary. Is it installed and sourced correctly? \n")
+            sys.exit(1)
+    
+    @staticmethod #make it static so we can call it without instancing the class. 
     def convert_xyz_to_gro(xyz_file, gro_file):
         """Converts an XYZ file to a GRO file (hardcodes resname as 'CELL' but is otherwise non-specific)
 
@@ -51,14 +69,17 @@ class Gromacs_IO:
 
             gro.write(f'{0:>10.5f}{0:>10.5f}{0:>10.5f}\n') #add an empty box at the end of the .GRO
 
-    def build_GMX_top(gro_path, bead_mass, bond_types, lj_pairs):
+    def build_GMX_top_single_CELL(self, gro_path):
         """
-            Builds itp based on a given coordinate file (in .gro format). Currently assumes the Nucleus bead is at the end
+            Builds itp based on a given coordinate file (in .gro format). Currently assumes the Center bead is at the end of the .gro
             (in how the bonds are drawn) but this can be easily made general if needed. 
-            
-            Input:
-            str "gro_path", int "bead mass", dict of "bond_types" and dict of "lj_pairs"
         """
+    
+        #access required information from the input files to build topology
+        self.parse_GMX_ff()
+        self.load_json_CELL()
+        self.extract_inputs_JSON()
+        
         with open(gro_path, "r") as gro:
             abspath = os.path.abspath(gro_path)
             gro_list = [line.split() for line in gro.readlines()[2:-1]]  # Read and split lines, excluding the first and last lines
@@ -68,56 +89,39 @@ class Gromacs_IO:
                 now = datetime.datetime.now()
                 header = "; Topology file generated from {} at {}\n".format(abspath, now.strftime("%H:%M:%S"))
                 top.write(header)
-                
-                #Write the [defaults] directive. nbfunc = 1 (LJ), comb-rule = 2 (sigma/eps notation). Default LJ settings
-                top.write("\n[ defaults ]\n; nbfunc     comb-rule    gen-pairs  fudgeLJ fudgeQQ\n    1           2          yes          1.0     1.0\n")
-                bead_names = set(line[1] for line in gro_list if len(line) >= 2)  # Extract only the unique bead identities
-                
-                #Write the [atomtypes] directive based on the unique beads in the .GRO
-                top.write("\n[ atomtypes ]\n; name mass charge   ptype   sigma   epsilon\n")
-                top.writelines("{:<4s}{}       0.0    A      0.0       0.0\n".format(name, bead_mass) for name in bead_names)
 
-                # Write the [nonbond_params] directive
-                top.write("\n[ nonbond_params ]\n;  i   j  func sigma epsilon\n")
-                for pair in lj_pairs:
-                    params = lj_pairs[pair]["params"]
-                    top.write("   {:<3s} {:<3s} {:<3s} {:<6s} {:<6s}\n".format(pair.split("-")[0], pair.split("-")[1], str(lj_pairs[pair]["func"]), str(params[0]), str(params[1])))
-
+                #write the forcefield that is used
+                ff_itp =  f"\n; Using forcefield from:\n#include \"{self.itp_path}\"\n"
+                top.write(ff_itp)
+                
                 # Write the [moleculetype] directive and the [atoms] directive based on the .GRO
-                top.write("\n[ moleculetype ]\n; Name        nrexcl\n  CELL           1\n\n[ atoms ]\n; nr type resnr residue atom cgnr charge mass\n")
+                top.write("\n[ moleculetype ]\n; Name        nrexcl\n  CELL        1\n\n[ atoms ]\n; nr type resnr residue atom cgnr  charge\n")
                 for lines in gro_list:
-                    atom_name, atom_nr = str(lines[1]), str(lines[2])
-                    atom_type = atom_name[0]
-                    top.write("  {:<3s}   {:<3s}    1    CELL    {:<3s}   {:<3s} 0.0000   {:<3s} \n".format(atom_nr, atom_type, atom_name, atom_nr, str(bead_mass)))
+                    atom_type, atom_nr = str(lines[1]), str(lines[2]) #save the atom name and index from the .GRO
+                    atom_name = atom_type[0]
+                    #we don't need to parse the mass explicitly, since GMX will take it from our force field, but this can be easily added, if needed
+                    top.write("  {:<3s}  {:<3s}  1    CELL    {:<3s}  {:<3s}  0.0000 \n".format(atom_nr, atom_type, atom_name, atom_nr))
                     
-                # Write the [bonds] directive based on the .GRO --> this is currently quite ugly and needs to be rewritten when the force field definitions are finished 
+                # Write the [ bonds ] directive based on the force field and .GRO file 
                 top.write("\n[ bonds ]\n; i j func  r0 fk\n")
-                for line in gro_list:
-                    atom_nr = str(line[2])
-                    atom_type = str(line[1][0])
-                    n_atom = str(len(gro_list))
-                    bond_type = None
-                    if atom_type == "A":
-                        bond_type = "type A-N"
-                    elif atom_type == "B":
-                        bond_type = "type B-N"
-                    if bond_type is not None:
-                        params = bond_types[bond_type]["params"]
-                        top.write("  {:<2s} {:<3s} {:<3s} {:<3s} {:<3s} \n".format(atom_nr, str(n_atom), str(bond_types[bond_type]["func"]), str(params[0]), str(params[1])))
-        
-                # Write system information for simulation at the end
-                top.write("\n[ system ]\nCELL MODEL\n\n[ molecules ]\nCELL       1")
+                #we extract the atom names (except Center bead) from the bondedtypes dictionary
+                atom_names = set()
+                for key in self.bondtypes.keys():
+                    atom_names.add(key[1])
+                    
+                #now we look for the atom in the .gro and parse the right bonded type accordingly
+                for lines in gro_list:
+                    if lines[1] in atom_names:
+                        atom_type, atom_nr = str(lines[1]), str(lines[2]) #save the atom name and index from the .GRO
+                        n_atom = str(len(gro_list))  # if the last atom is always the C-bead, we can easily find it like this
+                        values = self.bondtypes[('C', atom_type)] 
+                        top.write("  {:<2s} {:<3s} {:<3s} {:<3s} {:<3s} \n".format(atom_nr, n_atom, str(values['func']), str(values['r0']), str(values['fk'])))
+                        
+                # Write system information for simulation at the end (I see no reason why to separate the topology in a .itp and .top file)
+                system =  f"\n[ system ]\nCELL MODEL\n\n[ molecules ]\nCELL    {self.Simulation_nr_cells}" 
+                top.write(system)
             top.close()
+            print("A topology file has been constructed")
+            
 
-bead_mass = 72
-#predefine the bonded types
-bond_types = {"type A-N": {"func": 1, "params": [1.57, 5000]},
-              "type B-N": {"func": 1, "params": [1.57, 6000]}}
 
-#LJ is in sigma epsilon form/order.
-lj_pairs = {"A-A": {"func": 1, "params": [0.47, 2.0]},
-              "B-B": {"func": 1, "params": [0.47, 2.0]},
-              "A-B": {"func": 1, "params": [0.47, 2.0]}}
-
-Gromacs_IO().convert_xyz_to_gro('CELL.xyz', 'CELL.gro')
-Gromacs_IO.build_GMX_top(gro_path='CELL.gro', bead_mass=72, bond_types=bond_types, lj_pairs=lj_pairs)

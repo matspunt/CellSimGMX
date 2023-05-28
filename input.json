@@ -5,7 +5,7 @@
             "value": 4
         },
         "cell_radius": {
-            "description": "The radius of the cells.",
+            "description": "The radius of the cells in Angstrom. ",
             "value": 18
         },
         "initial_packing_shape": {
@@ -17,37 +17,12 @@
         "number_of_cells": {
             "description": "The number of cells in the system",
             "value": 1
-        },
-        "beads": {
-            "description": "The different types of beads in the system.",
-            "A": {
-                "quantity": 90,
-                "mass": 72
-            },
-            "B": {
-                "quantity": 90,
-                "mass": 72
-            },
-            "N": {
-                "quantity": 1,
-                "mass": 72
-            }
         }
     },
     "GROMACS": {
-        "mdp_options": {
             "timestep": {
                 "description": "This is the timestep for the .mdp setting",
                 "value": 70000
             }
-        }
-    },
-    "LAMMPS": {
-        "lmp_options": {
-            "timestep": {
-                "description": "This is the timestep for the LAMMPS input file",
-                "value": 50000
-            }
-        }
     }
 }

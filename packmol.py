@@ -7,94 +7,87 @@ import subprocess as sp
 import sys
 import tempfile
 
-class PackmolInput:
-    """
-    A class for reading input options for Packmol simulation from a standard JSON file.
+from settings_parser import JSONParser
+from settings_parser import ForcefieldParserGMX
 
-    Methods:
-    --------
-    __init__(self, filename):
-        Initializes the class, actually reads the file. 
-    construct_bead_xyz(bead_identities)
-        Based on the bead 'force field', constructs the XYZ files required for PACKMOL
+class InputSingleCell(JSONParser, ForcefieldParserGMX):
     """
-    
-    def __init__(self, filename):
-        with open(filename) as f:
-            data = json.load(f)
-        self.tolerance = data["packmol_tolerance"]
-        self.number_of_cells = (data["number_of_cells"])
-        self.beads = data["beads"]
-        self.init_shape = data["initial_packing_shape"]
-        if self.init_shape not in ["sphere", "cube", "ellipsoid"]:
-            sys.exit("Error: initial_packing_shape must be 'sphere', 'cube', or 'ellipsoid'")
-        self.cell_radius = float(data["cell_radius"])
-    
-    def construct_bead_xyz(self):
+    This class preprocesses the necessary inputs for creating a single cell using PACKMOL. The inputs from both the .JSON file and the forcefield
+    are used to create an .xyz file with the necessary number of atoms etc. Currently hardcoded for 180 atoms. 
+    """
+
+    def __init__(self, json_directory, forcefield_directory):
         """
-        Saves a .XYZ file for each individual bead in the CELL for PACKMOL input.
-        The name of the beads is read from the 'beads' parameter.
+        Initialize JSONParser and ForcefieldParserGMX so its attributes become a member of 'self'
+        """
+        JSONParser.__init__(self, json_directory)
+        ForcefieldParserGMX.__init__(self, forcefield_directory)
+       
+    def preprocessing_PACKMOL_single_cell(self):
+        """
+        Saves a .XYZ file for each individual bead in the CELL for PACKMOL input. The name of the beads is read from the 'beads' parameter. 
+        PACKMOL needs the actual coordinate files before it can run. This approach is dumb, but effective. 
+        
+        Then builds the .inp string which contains the PACKMOL input settings based on the settings in the 'input.json'
+
+        Returns:
+            inp (str): Packmol input file string for building a single CELL
         """
         xyz = "1\n\nX         10.00000       10.00000       10.00000"
-        bead_identities = []
-        for bead, count in self.beads.items():
-            for i in range(count):
-                bead_identities.append(bead)
-        for bead in bead_identities:
+        self.parse_GMX_ff()
+        #Now extract the bead names from the keys in the 'atomtypes' dict
+        bead_names = list(self.atomtypes.keys())
+        
+        # and save placeholder .XYZ files for PACKMOL
+        for bead in bead_names:
             file_name = f"{bead}.xyz"
             with open(file_name, "w") as f:
                 f.write(xyz.replace("X", bead))
-        
-    def prepare_inp(self):
-        """
-        Prepares a Packmol input file formatted based on the input.json file.
+                
+        #parse the JSON information and then construct the PACKMOL.inp
+        self.load_json_CELL()
+        self.extract_inputs_JSON()
 
-        Returns:
-            inp (str): Packmol input file string. Is used in PackmolExecuter.run_packmol()
-        """
-        inp = f"tolerance {self.tolerance}\nfiletype xyz\noutput CELL.xyz\nmovebadrandom\n"
-        for bead, number in self.beads.items():
-            if bead != "N":
-                dr = self.cell_radius - 0.1
-                inp += f"\nstructure {bead}.xyz\n  number {number}\n  atoms 1\n    inside {self.init_shape} 0. 0. 0. {self.cell_radius}\n  end atoms\n  atoms 1\n    outside {self.init_shape} 0. 0. 0. {dr}\n  end atoms\nend structure\n\n"
-        inp += f"structure N.xyz\n  number {self.beads['N']}\n  center\n  fixed 0. 0. 0. 0. 0. 0.\nend structure\n"
+        inp = f"tolerance {self.PACKMOL_tol}\nfiletype xyz\noutput CELL.xyz\nmovebadrandom\n"
+        
+        for bead in bead_names: #create the PACKMOL settings for each bead type 
+            if bead != "C":
+                dr = self.PACKMOL_cell_radius - 0.1 #for optimal packing, the inner radius should be 0.1 Angstrom smaller than the cell radius
+                #the center bead name is assumed to be called as "C.xyz"!
+                inp += f"\nstructure {bead}.xyz\n  number 90\n  atoms 1\n    inside {self.PACKMOL_init_shape} 0. 0. 0. {self.PACKMOL_cell_radius}\n  end atoms\n  atoms 1\n    outside {self.PACKMOL_init_shape} 0. 0. 0. {dr}\n  end atoms\nend structure\n\n"
+        inp += f"structure C.xyz\n  number 1\n  center\n  fixed 0. 0. 0. 0. 0. 0.\nend structure\n"
+        
         return inp
 
-class PackmolExecuter:
+class PackmolExecuterSingleCell(InputSingleCell):
     """
-    This class inherits PACKMOL input settings from the "PackmolInput" class and uses it to run PACKMOL. 
+    This class executes PACKMOL for a single cell using the preprocessed inputs inherited from the "InputSingleCell" class.
+    """
 
-    Methods:
-    ----------
-    check_packmol_path():
-        Checks if the packmol binary is present in the system and raises an error if not.
-    run_packmol():
-        Runs Packmol with the specified input parameters and builds the single CELL model based on JSON input. 
-    """
-    
-    def __init__(self):
-        self.packmol_path = find_executable("packmol")
-        json_file = str(glob.glob("*json"))[2:-2] #look for a JSON file in the given directory
-        self.packmol_input = PackmolInput(json_file) #inherit from the PackmolInput class to read the JSON file
-    
+    def __init__(self, json_directory, forcefield_directory):
+        """
+        Initialize the parent class (InputSingleCell) and its attributes.
+        """
+        super().__init__(json_directory, forcefield_directory) #inherit functionality from "InputSingleCell" preprocessor class
+        self.packmol_path = find_executable("packmol") #check whether PACKMOL is available in the environment the user is calling the programme. 
+
     def check_packmol_path(self):
         """
         Checks if the packmol binary is present in the system and raises an error if not.
         """
         if self.packmol_path is not None:
-            print(f"PACKMOL located at: {self.packmol_path} \n")
+            print(f"Using PACKMOL from: {self.packmol_path} \n")
         else:
             print(f"Error: cannot locate PACKMOL binary. Is it installed as 'packmol' and are you in the right environment?\n")
             sys.exit(1)
  
-    def run_packmol(self):
+    def run_packmol_single_CELL(self):
         """
         Runs Packmol with the specified input parameters, and builds the coordinate .xyz file. Kills the program if problems in PACKMOL were found. 
         """
         self.check_packmol_path()
-        self.packmol_input.construct_bead_xyz()
-        input_file = self.packmol_input.prepare_inp() #inherit the inp from the 'PackmolInput' class
-        # see: https://github.com/mosdef-hub/mbuild/issues/419, use tempfile as workaround
+        input_file = self.preprocessing_PACKMOL_single_cell() #inherit the inp from the 'InputSingleCell' class
+        # see: https://github.com/mosdef-hub/mbuild/issues/419, using tempfile as workaround
         packmol_inp = tempfile.NamedTemporaryFile(mode="w", delete=False, prefix="packmol-", suffix=".inp")
         packmol_inp.write(input_file)
         packmol_inp.close()
@@ -123,8 +116,3 @@ class PackmolExecuter:
                 print("Most likely the cell radius and/or the number of particles are incorrectly defined in your input.JSON")
                 for file in glob.glob('*.xyz'):
                         os.remove(file)
-
-#We can read the JSON with the PACKMOL input class
-execute_packmol = PackmolExecuter()
-execute_packmol.run_packmol()
-
