@@ -7,7 +7,7 @@ from gromacs import Gromacs_IO
     If we want only a single call to the parser functions, I need to rethink how I inherit parsing functionality. Let's see...
 """
 
-input_dir = "/wrk/matspunt/coding/CELL_MODEL" 
+input_dir = "/wrk/matspunt/coding/CELL_MODEL/src" 
 
 packmol = PackmolExecuterSingleCell(input_dir, input_dir)
 packmol.run_packmol_single_CELL()

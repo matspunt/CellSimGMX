@@ -2,6 +2,13 @@
 
 This is a repo for the CELL_MODEL project. 
 
+
+NOTE:
+
+- "src" contains actual python package files and functionality
+- "tools" contains useful tools in setting up simulations and testing the project model
+-
+
 TODO: 
 
 Proper Python package code:

@@ -117,7 +117,9 @@ class ForcefieldParserGMX:
                     self.parse_bondtype_GMX_helper(line)
 
     def parse_atomtype_GMX_helper(self, line):
-        #skip lines with comments, note that current parsing works with dictionaries. 
+        """
+            This function is required for PACKMOL. 
+        """
         if not line.startswith(';'):
             columns = line.split()
             if len(columns) >= 6:
@@ -128,7 +130,6 @@ class ForcefieldParserGMX:
                 sigma = float(columns[4])
                 epsilon = float(columns[5])
                 self.atomtypes[atomtype] = {'mass': mass, 'charge': charge, 'ptype': ptype, 'sigma': sigma, 'epsilon': epsilon}
-
 
     def parse_nonbond_params_GMX_helper(self, line):
         """
@@ -157,3 +158,5 @@ class ForcefieldParserGMX:
                 r0 = float(columns[3])
                 fk = float(columns[4])
                 self.bondtypes[(i, j)] = {'func': func, 'r0': r0, 'fk': fk}
+                
+                
