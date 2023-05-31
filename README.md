@@ -35,7 +35,12 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
 
 ## Future goals
 
-- [ ] Add quality control metrics that can give insight in the behaviour of the simulations. These include things such as the I) averaged density of particles per a given area, II) the Radial Distribution Functions of a given particle type, III) the residence time of two neighbouring particles, IV) the geometric shape of a given combination of parameters, and V) the number of crashes reported for duplicates of that simulation. 
+- [ ] Add quality control metrics that can give insight in the behaviour of the simulations. These include things such as the 
+    * I) averaged density of particles per a given area
+    * II) the Radial Distribution Functions of a given particle type
+    * III) the residence time of two neighbouring particles
+    * IV) the geometric shape of a given combination of parameters (obtained from clustering)
+    * V) the number of crashes reported for duplicates of that simulation. 
 - [ ] Include a basic toolkit that can create multiple CELL packing (both crystal-like, and localized densities). Shreyas working on this. 
 - [ ] Add rerun capabilites to the ```tools``` that is capable of decomposing the LJ interactions in interactions per bead type. 
 - [ ] Regarding LAMMPS functionality, figure out the force field definition/parsing by looking at e.g. Moltemplate. 
