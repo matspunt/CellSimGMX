@@ -50,6 +50,7 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
 git clone --branch master https://github.com/matspunt/CELL_MODEL.git
 ```
  The ```master``` branch will be kept stable. Development will happen in the ```development``` branch. 
+ 
 3. If you are contributing to the development branch, I recommend you to clone it in a separate directory since dynamic branches can get tricky with version control. To clone the ```development``` branch, simply repeat the command:
 ```sh
 git clone --branch development https://github.com/matspunt/CELL_MODEL.git
@@ -60,5 +61,5 @@ Or, alternatively, you can use an IDE like VS Code which has integrated git func
 ## Using the code or tools. 
 1. The ```src``` code is self-explanatory, and classes are well-documented. Just check ```main.py```
 2. The tools are separated in different files 
-<add on to this description>
+MORE WILL BE ADDED LATER WHEN THE TOOLS ARE REWRITTEN. 
 
