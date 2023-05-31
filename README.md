@@ -27,7 +27,7 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
 ├── CELL_sim_database.csv
 ```
 
- ```src ``` contains the not-so modular code that hopefully will be packaged into a proper Python package at a later stage.  Within 'src', ```main.py ``` contains the current functionality of the CELL code.
+ ```src ``` contains the not-so modular code that hopefully will be packaged into a proper Python package at a later stage.
  
   ```tools ``` contains modular code that is designed to help with setting up different GROMACS simulations. A description of the functions will follow later. 
   
