@@ -116,3 +116,5 @@ class PackmolExecuterSingleCell(InputSingleCell):
                 print("Most likely the cell radius and/or the number of particles are incorrectly defined in your input.JSON")
                 for file in glob.glob('*.xyz'):
                         os.remove(file)
+
+

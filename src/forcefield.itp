@@ -1,0 +1,30 @@
+; The forcefield definition follows the standard GROMACS formatting of force fields and abides by the .itp standard
+; Note that it would be best if these values were in the scientific notation since this is how GROMACS formats parameters internally. 
+; See also: https://manual.gromacs.org/current/reference-manual/topologies/topology-file-formats.html
+
+; FORCEFIELD ALPHA V0.1
+
+[ defaults ]
+; nbfunc     comb-rule    gen-pairs  fudgeLJ fudgeQQ
+    1           2          yes          1.0     1.0
+
+[ atomtypes ]
+; name mass   charge   ptype   sigma   epsilon
+   M1   72       0.0      A      0.0       0.0     ; membrae bead 1
+   M2   72       0.0      A      0.0       0.0     ; membrane bead 2
+   C    72       0.0      A      0.0       0.0     ; center bead around which the membrane is anchored (NOT the nucleus)
+
+[ nonbond_params ]
+;  i   j  func sigma epsilon
+   M1  M1   1   0.47   2.0
+   M2  M2   1   0.47   2.0
+   M1  M2   1   0.47   2.0
+   ; nonbonded parameters are excluded by default for single bonds (nrexcl = 1) so there is no point to defining Center LJ interactions     
+
+[ bondtypes]
+;  i   j  func    r0      fk   
+   C   M1   1     1.60    5000
+   C   M2   1     1.80    10000
+
+; [ pairtypes ] can use this to explicitly sigma and epsilon for particle interactions at a later stage
+
