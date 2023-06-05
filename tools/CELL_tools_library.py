@@ -9,35 +9,54 @@ import tempfile
 import shutil
 import numpy as np
 import pandas as pd
+import csv
 
 ####################################################################################################################
 #                                           A. DATABASE
 # We maintain a central 'database' in the form of a .csv file. We include some checks of the existing entries before
-# allowing the user to proceed to prevent mistakes in the simulation definitions, and unnecessary simulating of repeats
+# allowing the user to proceed to prevent mistakes in the simulation definitions, and unnecessarily repeating simulations
 ####################################################################################################################
 
+import pandas as pd
+
 class DatabaseMaintenance:
-    def __init__(self, csv_file):
-        self.csv_file = csv_file
+    @staticmethod
+    def check_repeat_sim(csv_file, dir_name_list):
+        
+        #with this counter we track the number of overlapping simulations and warn the user
+        counter = 0
 
-    def read_existing_entries_db(self):
-        df = pd.read_csv(self.csv_file)
-        return df.values.tolist()
+        with open(csv_file, 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if len(row) >= 2:
+                    dir_name = row[1]
+                    if dir_name in dir_name_list:
+                        counter += 1
+                        # let's introduce an index to deal with repeats. If the user decides to continue, the directory name is 
+                        # changed by appending 'repeat{index}' at the end
+                        index = 1
+                        new_dir_name = f"{dir_name}_repeat{index}"
+                        while new_dir_name in dir_name_list:
+                            index += 1
+                            new_dir_name = f"{dir_name}_repeat{index}"
+                        dir_name_list[dir_name_list.index(dir_name)] = new_dir_name
 
-    def save_new_entries_db(self, new_entries):
-        #this is susceptible to changes as the code matures
-        df = pd.DataFrame(new_entries, columns=['job_name', 'dir_name', 'score', 'scoring_dict', 'mass_dict', 'LJ_dict', 'bond_dict', 'mdp_dict'])
+        print(f"{counter} repeating simulations out of {len(dir_name_list)} requested have been found.")
+        user_input = input("Repeating simulations will be saved in the .csv with a 'repeatX' suffix. Do you want to proceed? (y/n): ")
 
-        # Check if any score value is smaller than 1.0
-        if any(df['score'] < 1.0):
-            user_input = input("WARNING: Similar parameters have been tested and sometimes led to crashes. "
-                               "Are you sure you want to proceed? Type 'y' to continue, any other key to abort ")
+        if user_input.lower() == 'y':
+            print("Proceeding with the simulation setup!")
+            return True
+        else:
+            print("Stopping the run based on your request...")
+            return False
 
-            if user_input.lower() != 'y':
-                print("You stopped the simulation. ")
-                return
+    @staticmethod
+    def save_new_entries_db(csv_file, new_entries):
+        df = pd.DataFrame(new_entries, columns=['job_name', 'dir_name', 'beads', 'mass', 'LJ_params', 'integrator', 'tcoupl', 'pcoupl'])
 
-        df.to_csv(self.csv_file, mode='a', header=False, index=False)
+        df.to_csv(csv_file, mode='a', header=False, index=False)
 
     @staticmethod
     def move_files_to_parentdir(source_dir, destination_dir, extensions):
@@ -59,8 +78,6 @@ class DatabaseMaintenance:
                     file_path = os.path.join(root, file)
                     os.remove(file_path)
 
-        
-        
 ####################################################################################################################
 #                                           B. FORCE FIELD PARSER
 #            Parses forcefield.itp based on a dictionary containing the bead names, mass and LJ identities of the particles
@@ -217,8 +234,8 @@ class PackmolExecuterSingleCell(InputSingleCell):
                 proc = sp.run("{} < {}".format(self.packmol_path, packmol_inp.name), stdout=sp.PIPE, universal_newlines=True, shell=True, timeout=60)
                 stdout = proc.stdout
                 f.write(stdout)
-                if 'Success!' in proc.stdout:
-                    print("SUCCES: The coordinate file has been built by PACKMOL. A logfile is saved as:" + log_file)
+                #if 'Success!' in proc.stdout:
+                    #print("SUCCES: The coordinate file has been built by PACKMOL. A logfile is saved as:" + log_file)
                 # remove all .xyz files except for CELL.xyz
                 for file in glob.glob('*.xyz'):
                     if file != 'CELL.xyz':
@@ -242,11 +259,10 @@ class PackmolExecuterSingleCell(InputSingleCell):
 # 
 ####################################################################################################################
 
-class Gromacs_IO():
+class Gromacs_IO:
     """
     Methods:
     --------
-    
     convert_xyz_to_gro(xyz_file, gro_file):
         Converts an XYZ file to a GRO file         
 
@@ -255,15 +271,19 @@ class Gromacs_IO():
         and the force field that is supplied. 
     """
 
-    def __init__(self):
-        self.GMX_path = find_executable("gmx") #check whether GROMACS is available in the environment
-        
-        if self.GMX_path is not None:
-            print(f"Using GROMACS version from: {self.GMX_path}")
+    @staticmethod
+    def check_GMX_path():
+        """
+        Checks if the GROMACS binary (gmx) is present in the system and returns its path.
+        """
+        gmx_path = find_executable("gmx")  # check whether GROMACS is available in the environment
+        if gmx_path is not None:
+            print(f"Using GROMACS version from: {gmx_path}\n")
+            return gmx_path
         else:
             print(f"\n\nError: cannot find GROMACS (gmx) binary. Is it installed and sourced correctly? \n")
             sys.exit(1)
-    
+
     @staticmethod #make it static so we can call it without instancing the class. 
     def convert_xyz_to_gro(xyz_file, gro_file, box_size):
         """Converts an XYZ file to a GRO file (hardcodes resname as 'CELL' but is otherwise non-specific)
@@ -302,8 +322,9 @@ class Gromacs_IO():
 
             gro.write(f'{box_size:>10.5f}{box_size:>10.5f}{box_size:>10.5f}\n')  # add the box at the end of the .gro file
             # note that due to the XYZ --> GRO conversion the CELL is centered at the origin (0,0,0) and not the box center
-
-    def build_GMX_top_single_CELL(self, gro_path, forcefield_path):
+            
+    @staticmethod
+    def build_GMX_top_single_CELL(gro_path, forcefield_path):
         """
         Builds itp based on a given coordinate file (in .gro format) and force field file.
         Currently assumes the Center bead is at the end of the .gro (in how the bonds are drawn),
@@ -454,11 +475,9 @@ class Gromacs_MDP:
             'vdw_type': 'cutoff',
             'vdw-modifier': 'Potential-shift-verlet',
             'rvdw': '1.1',
-            'tcoupl': 'Berendsen',
             'tc-grps': 'System',
             'tau_t': '1.0',
-            'ref_t': '298',
-            'Pcoupl': 'no',
+            'ref_t': '310',
             'Pcoupltype': 'isotropic',
             'tau_p': '12.0',
             'compressibility': '3e-4',
@@ -503,8 +522,19 @@ class GromacsRun:
         if not GMX:
             raise RuntimeError("Cannot find GROMACS executable 'gmx' in PATH")
         try:
+            # we need to extract the box size to obtain the input for 'gmx editconf'
+            # so the CELL is centered in the box
+            # This is shitty but it works...
+            with open(filename, 'r') as gro:
+                lines = gro.readlines()
+                box_size = lines[-1].strip()
+            
+            editconf= f'gmx editconf -f {filename} -o {filename} -box {box_size} >/dev/null 2>&1'
+            os.system(editconf)
+            
             grompp_min_cmd = ['gmx', 'grompp', '-p', top_name, '-f', 'min.mdp', '-c', filename, '-o', '1-min', '-maxwarn', '1']
             sp.run(grompp_min_cmd, check=True, stdout=open('gmx_run.log', 'a'), stderr=sp.STDOUT)
+            
             mdrun_min_cmd = ['gmx', 'mdrun', '-nt', str(nr_of_threads), '-pin', 'on', '-deffnm', '1-min', '-v']
             sp.run(mdrun_min_cmd, check=True, timeout=timeout, stdout=open('gmx_run.log', 'a'), stderr=sp.STDOUT)
 
@@ -521,5 +551,5 @@ class GromacsRun:
             print(f'The simulation failed with error {e.returncode}, most likely there are problems in the input parameters. Check the log at "gmx_run.log"')
             return
         else:
-            print(f'This simulation completed without any errors, the log information is saved in "gmx_run.log"')
+            print(f'This simulation completed without any errors, the log information is saved in "gmx_run.log"\n')
         
