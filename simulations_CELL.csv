@@ -1,0 +1,4 @@
+Populating CSV. Random parameter search,M1_mass72.0_r1.2_fk250.0_sigma0.47_eps1.0_md_Berendsen_no,['M1'],72.0,"{'sigma': 0.47, 'epsilon': 1.0}",md,Berendsen,no,NO
+Populating CSV. Random parameter search,M1_mass72.0_r1.4_fk250.0_sigma0.47_eps1.0_md_Berendsen_no,['M1'],72.0,"{'sigma': 0.47, 'epsilon': 1.0}",md,Berendsen,no,NO
+Populating CSV. Random parameter search,M1_mass72.0_r1.6_fk250.0_sigma0.47_eps1.0_md_Berendsen_no,['M1'],72.0,"{'sigma': 0.47, 'epsilon': 1.0}",md,Berendsen,no,NO
+Populating CSV. Random parameter search,M1_mass72.0_r1.8_fk250.0_sigma0.47_eps1.0_md_Berendsen_no,['M1'],72.0,"{'sigma': 0.47, 'epsilon': 1.0}",md,Berendsen,no,YES

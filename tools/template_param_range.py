@@ -1,4 +1,4 @@
-'''Template script for setting up simulations with the CELL tools code in GROMACS.
+'''06/06/23. Template script for setting up simulations with the CELL tools code in GROMACS.
 
 You can configure four aspects of the simulation:
 
@@ -13,6 +13,8 @@ any setting that you like by changing it in a mdp dictionary.
 
 You can check "dict_examples.py" for basic examples on how to modify these configurations for multiple bead types. 
 The current script restricts itself to single cells, with only a single membrane bead type
+
+DO NOT FORGET SETTING THE TIMEOUT, AND NSTEPS!!!!!!!!!!!!!!!!!!!!!! IN THE MAIN GROMACS.RUN FUNCTION!!!!!! DESCRIBE THIS ON THE GITHUB
 '''
 
 from CELL_tools_library import DatabaseMaintenance
@@ -30,9 +32,9 @@ import shutil
 from itertools import product
 
 ##CONFIGURATION 1: Choose a descriptive job name
-jobname = "This is an example jobname" 
+jobname = "Populating CSV. Random parameter search" 
 
-##CONFIGURATION 2: Setting the range of search parameters for the force field definition
+##CONFIGURATION 2: Setting the force field and the range of parameters (can keep constant if you want to test .mdp settings)
 
 ff_dict = {
     'bead_types': {
@@ -48,10 +50,17 @@ ff_dict = {
 }
 
 r0_range = np.arange(1.2, 1.8, 0.2).round(2)
-fk_range = np.arange(250, 2000, 250).round(2)
-mass_range = np.arange(50, 100, 10).round(2)
+#fk_range = np.arange(250, 2000, 250).round(2)
+#mass_range = np.arange(50, 100, 25).round(2)
+#mass_range = [72]
+#sigma_range = [0.47] #let's keep sigma constant for now. 
+#epsilon_range = np.arange(1, 3, 1).round(2)
+
+#Example for demonstrating script during presentation
+fk_range = [250]
+mass_range = [72]
 sigma_range = [0.47] #let's keep sigma constant for now. 
-epsilon_range = np.arange(1, 3, 1).round(2)
+epsilon_range = [1]
 
 ##CONFIGURATION 3: configuring PACKMOL settings
 packmol_dict = {
@@ -76,10 +85,6 @@ mdp_settings= {
     'pcoupl': 'no'
 }
 
-# Before running, let's create a backup of our database in case we accidentally start running simulations
-# we don't want to run. This can be restored in case of mistakes
-shutil.copy2('simulations_CELL.csv', 'simulations_CELL.csv.old')
-
 PackmolExecuterSingleCell.check_packmol_path()
 Gromacs_IO.check_GMX_path()
 
@@ -97,13 +102,16 @@ for _, row in param_comb.iterrows():
     
     dir_names.append(dir_name)
 
-#ask the user to confirm the parameters of the runs
+#Let's spawn a temporary folder and create a local copy of the database that we will work with
+os.makedirs('.tmp_run', exist_ok=True)
+os.chdir('.tmp_run')
+
+shutil.copy2('../../simulations_CELL.csv', 'simulations_CELL.csv')
+
+#Then ask  the user to confirm
 proceed = DatabaseMaintenance.check_repeat_sim('simulations_CELL.csv', dir_names)
 
 if proceed:
-    os.makedirs('tmp_run', exist_ok=True)
-    os.chdir('tmp_run')
-    #when choosing to proceed, we need to loop over both the parameters and the possible new directory names
     for (_, row), dir_name in zip(param_comb.iterrows(), dir_names):
         #Update the user on the simulation progress
         sim_counter = int(_,) + 1
@@ -133,25 +141,24 @@ if proceed:
         Gromacs_IO.build_GMX_top_single_CELL('CELL.gro', 'forcefield.itp')
 
         Gromacs_MDP.write_min_mdp_file('min.mdp', 'cg', '5000', '5', '0.01') #do not need to change
-        Gromacs_MDP.write_run_mdp_file('run.mdp', '5000', mdp_settings) #50000000 steps for 1 us
+        nsteps = Gromacs_MDP.write_run_mdp_file('run.mdp', '50000', mdp_settings) # here we set the number of steps explicitly. 50000000 steps = 1 us
+        time_per_sim = GromacsRun.calculate_time_per_sim(nsteps)
+        print(f"This simulation will take roughly {time_per_sim} minutes")
+        
+        crash_status = GromacsRun.run_GMX_basic(filename='CELL.gro', timeout=15, nr_of_threads=12) #timeout in seconds. Default is 2400 s for a 1 us simulation
 
-        GromacsRun.run_GMX_basic(filename='CELL.gro', timeout=60, nr_of_threads=12) #2400 is default for 1 us
-
-        #Copy the files to their respective locations
-        DatabaseMaintenance.move_files_to_parentdir('.', f'../../log/{dir_name}', ['.log'])
-        DatabaseMaintenance.move_files_to_parentdir('.', f'../../params/{dir_name}', ['.top', '.itp'])
-        DatabaseMaintenance.move_files_to_parentdir('.', f'../../traj/{dir_name}', ['.trr', '.edr', '.xtc'])
-        DatabaseMaintenance.move_files_to_parentdir('.', f'../../settings/{dir_name}', ['.mdp', '.tpr'])
-        DatabaseMaintenance.move_files_to_parentdir('.', f'../../coord/{dir_name}', ['.gro', '.xyz'])
+        #First, we move the simulation files to temporary folders in '.tmp_run'
+        DatabaseMaintenance.move_files_by_ext('.', f'log/{dir_name}/.', ('.log'))
+        DatabaseMaintenance.move_files_by_ext('.', f'params/{dir_name}/.', ('.top', '.itp'))
+        DatabaseMaintenance.move_files_by_ext('.', f'traj/{dir_name}/.', ('.trr', '.edr', '.xtc'))
+        DatabaseMaintenance.move_files_by_ext('.', f'settings/{dir_name}/.', ('.mdp', '.tpr'))
+        DatabaseMaintenance.move_files_by_ext('.', f'coord/{dir_name}/.', ('.gro', '.xyz'))
     
-        #Now we update the database with our simulation settings
+        #Then we update the database in '.tmp_run'
         bead_names = [f"{key}" for key in ff_dict['bead_types'] if key.startswith('M')]
-    
         entries_db = [{
         'job_name': jobname,
         'dir_name': dir_name,
-        'crash_score': 0.0,
-        'scoring_dict': {},
         'beads': bead_names,
         'mass': row['mass'],
         'LJ_params': {
@@ -160,18 +167,17 @@ if proceed:
         },
         'integrator': mdp_settings.get('integrator', ''),
         'tcoupl': mdp_settings.get('tcoupl', ''),
-        'pcoupl': mdp_settings.get('pcoupl', '')
+        'pcoupl': mdp_settings.get('pcoupl', ''),
+        'crash': crash_status
         }]
-    
-        DatabaseMaintenance.save_new_entries_db('../simulations_CELL.csv', entries_db)
-    os.chdir('../')     
-    #do cleanup and get rid of any leftover files
-    shutil.rmtree('tmp_run')
+        
+        #Update the local database in '.tmp_run'
+        DatabaseMaintenance.save_new_entries_db('simulations_CELL.csv', entries_db) 
 else:
-    print("The simulation setup is stopped upon your request.")
-
-### Todo:
-### Run the simulations in a temporary directory, and ask the user to merge the requested simulations with the database. 
-### Create a simulation and crash score in case the simulation already exists. Append '_repeatX' at the end of the dir name
-### if it already exists and the user wants to proceed. 
-### 
+    print("\nThe simulation setup was stopped upon your request.")
+    os.chdir('../')
+    shutil.rmtree('.tmp_run')
+    
+#When the simulations are done, ask whether the user is really sure that they want to merge this version of simulations with the existing database
+DatabaseMaintenance.confirm_and_cleanup('simulations_CELL.csv')
+#if yes, update all the simulations with the database. Otherwise delete all the simulation files and restore the old database. 

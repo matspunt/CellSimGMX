@@ -10,20 +10,23 @@ import shutil
 import numpy as np
 import pandas as pd
 import csv
+import re
 
 ####################################################################################################################
 #                                           A. DATABASE
 # We maintain a central 'database' in the form of a .csv file. We include some checks of the existing entries before
 # allowing the user to proceed to prevent mistakes in the simulation definitions, and unnecessarily repeating simulations
+# After the simulations are finished, we ask the user if they are absolutely sure that they want to merge this set of simulations
 ####################################################################################################################
-
-import pandas as pd
 
 class DatabaseMaintenance:
     @staticmethod
     def check_repeat_sim(csv_file, dir_name_list):
-        
-        #with this counter we track the number of overlapping simulations and warn the user
+        '''
+            Basic function to check repeats of directory names. This is slightly ugly and not as nice as I would like it to be
+            I might rewrite this at a later stage if I find the time. Currently saves every repeat as "_repeat"
+        '''
+        #introduce a counter to track the number of overlapping simulation names and warn the user about it
         counter = 0
 
         with open(csv_file, 'r') as file:
@@ -32,51 +35,79 @@ class DatabaseMaintenance:
                 if len(row) >= 2:
                     dir_name = row[1]
                     if dir_name in dir_name_list:
+                        #update the counter
                         counter += 1
-                        # let's introduce an index to deal with repeats. If the user decides to continue, the directory name is 
-                        # changed by appending 'repeat{index}' at the end
-                        index = 1
-                        new_dir_name = f"{dir_name}_repeat{index}"
-                        while new_dir_name in dir_name_list:
-                            index += 1
-                            new_dir_name = f"{dir_name}_repeat{index}"
+                        new_dir_name = f"{dir_name}_repeat"
+                        #and save the dir name as a repeat
                         dir_name_list[dir_name_list.index(dir_name)] = new_dir_name
 
         print(f"{counter} repeating simulations out of {len(dir_name_list)} requested have been found.")
-        user_input = input("Repeating simulations will be saved in the .csv with a 'repeatX' suffix. Do you want to proceed? (y/n): ")
+        user_input = input("If repeats were found, they will be saved in the .csv with a 'repeat' suffix. Do you want to proceed with the setup? (y/N): ")
 
         if user_input.lower() == 'y':
-            print("Proceeding with the simulation setup!")
+            print("\nProceeding with the simulation setup:")
             return True
         else:
-            print("Stopping the run based on your request...")
             return False
 
     @staticmethod
+    def confirm_and_cleanup(csv_file):
+        """
+            Ask the user whether they want to merge the simulations they just ran with the existing database. 
+        """
+        user_input = input("""
+            Carefully check the input parameters of this set of simulations and the resulting simulations.
+            If you want to merge the simulations with the database, press 'y'.
+            Otherwise, press 'N', which will delete the simulations and restore the previous database.
+            """)
+
+        if user_input.lower() == 'y':
+            
+            #copy the updated database file
+            shutil.copy(csv_file, '../../')
+            
+            #some cleanup of leftover files
+            for junk in glob.glob('#*'):
+                os.remove(junk)
+            for junk in glob.glob('*.cpt'):
+                os.remove(junk)
+                
+            #copy the simulation files to the main dirs
+            shutil.copytree('.', '../../', dirs_exist_ok=True)
+            os.chdir('..')
+           
+            shutil.rmtree('.tmp_run')
+        else:
+            confirm_delete = input("Are you absolutely sure you want to delete all simulations from this run? This action cannot be undone! (y/N): ")
+
+            if confirm_delete.lower() == 'y':
+                os.chdir('..')
+                shutil.rmtree('.tmp_run')
+                print("All simulation files have been deleted. The database remains the same as before this run.")
+            else:
+                #If the user made a mistake in this prompt, reset the prompt so they can change their answer
+                DatabaseMaintenance.confirm_and_cleanup(csv_file)
+
+    @staticmethod
     def save_new_entries_db(csv_file, new_entries):
-        df = pd.DataFrame(new_entries, columns=['job_name', 'dir_name', 'beads', 'mass', 'LJ_params', 'integrator', 'tcoupl', 'pcoupl'])
+        df = pd.DataFrame(new_entries, columns=['job_name', 'dir_name', 'beads', 'mass', 'LJ_params', 'integrator', 'tcoupl', 'pcoupl', 'crash'])
 
         df.to_csv(csv_file, mode='a', header=False, index=False)
 
     @staticmethod
-    def move_files_to_parentdir(source_dir, destination_dir, extensions):
-        os.makedirs(destination_dir, exist_ok=True)
+    def move_files_by_ext(source_dir, target_dir, file_extensions):
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+
         for root, dirs, files in os.walk(source_dir):
             for file in files:
-                _, file_ext = os.path.splitext(file)
-                if file_ext.lower() in extensions:
-                    src_path = os.path.join(root, file)
-                    dest_path = os.path.join(destination_dir, file)
-                    shutil.move(src_path, dest_path)
-    
-    @staticmethod          
-    def del_files_with_extension(directory, extension):
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                _, file_ext = os.path.splitext(file)
-                if file_ext.lower() == extension:
-                    file_path = os.path.join(root, file)
-                    os.remove(file_path)
+                if file.endswith(file_extensions):
+                    source_path = os.path.join(root, file)
+                    target_path = os.path.join(target_dir, file)
+
+                    # Check if the source and target paths are the same after normalization
+                    if os.path.normpath(source_path) != os.path.normpath(target_path):
+                        shutil.move(source_path, target_path)
 
 ####################################################################################################################
 #                                           B. FORCE FIELD PARSER
@@ -159,7 +190,7 @@ class InputSingleCell():
     def preprocessing_PACKMOL_single_cell(self):
         """
         Saves a .XYZ file for each individual bead in the CELL for PACKMOL input. The name of the beads is read from the 'beads' parameter. 
-        PACKMOL needs the actual coordinate files before it can run. This approach is dumb, but effective. 
+        PACKMOL needs the actual physical coordinate files before it can run (tmpfiles do not work...) so we need to remove these later
         
         Then builds the .inp string which contains the PACKMOL input settings based on the settings in the 'input.json'
 
@@ -198,7 +229,7 @@ class PackmolExecuterSingleCell(InputSingleCell):
     This class executes PACKMOL for a single cell using the preprocessed inputs inherited from the "InputSingleCell" class.
     """
 
-    packmol_path = find_executable("packmol") # define packmol_path as a class attribute
+    packmol_path = find_executable("packmol")
 
     def __init__(self, packmol_dict):
         """
@@ -211,7 +242,7 @@ class PackmolExecuterSingleCell(InputSingleCell):
         """
         Checks if the packmol binary is present in the system and raises an error if not.
         """
-        if PackmolExecuterSingleCell.packmol_path is not None:  # access packmol_path using the class name
+        if PackmolExecuterSingleCell.packmol_path is not None:
             print(f"Using PACKMOL from: {PackmolExecuterSingleCell.packmol_path}")
         else:
             print(f"Error: cannot locate PACKMOL binary. Is it installed as 'packmol' and are you in the right environment?\n")
@@ -326,7 +357,8 @@ class Gromacs_IO:
     @staticmethod
     def build_GMX_top_single_CELL(gro_path, forcefield_path):
         """
-        Builds itp based on a given coordinate file (in .gro format) and force field file.
+        Builds .itp based on a given coordinate file (in .gro format) and force field file (which we 
+        have parsed through 'ForcefieldParser' class).
         Currently assumes the Center bead is at the end of the .gro (in how the bonds are drawn),
         but this can be easily made general if needed.
         """
@@ -368,9 +400,8 @@ class Gromacs_IO:
                 top.write("\n[ moleculetype ]\n; Name        nrexcl\n  CELL        1\n\n[ atoms ]\n; nr type resnr residue atom cgnr  charge\n")
                 for lines in gro_list:
                     atom_type, atom_nr = str(lines[1]), str(lines[2])  # save the atom name and index from the .GRO
-                    atom_name = atom_type[0]
                     # we don't need to parse the mass explicitly, since GMX will take it from our force field, but this can be easily added, if needed
-                    top.write("  {:<3s}  {:<3s}  1    CELL    {:<3s}  {:<3s}  0.0000 \n".format(atom_nr, atom_type, atom_name, atom_nr))
+                    top.write("  {:<3s}  {:<3s}  1    CELL    {:<3s}  {:<3s}  0.0000 \n".format(atom_nr, atom_type, atom_type, atom_nr))
 
                 # Write the [ bonds ] directive based on the force field and .GRO file
                 top.write("\n[ bonds ]\n; i j func  r0 fk\n")
@@ -401,6 +432,10 @@ class Gromacs_IO:
 ####################################################################################################################
 
 class Gromacs_MDP:
+    '''
+        Class that exposes basic Martini 3 .mdp settings through dictionaries. If needed, this class could be rewritten
+        to be more sophisticated, but I guess it suffices for the purposes of this set of simulations. 
+    '''
     @staticmethod
     def write_min_mdp_file(filename, em_algorithm, nsteps, emtol, emstep):
             #we don't need to change any other minimization settings than the ones exposed here. 
@@ -495,6 +530,8 @@ class Gromacs_MDP:
             for key, value in run_mdp.items():
                 f.write(f"{key} = {value}\n")
         
+        return nsteps
+        
         #move everything to a folder "toppar" to keep .itp and .mdp nicely contained. 
         #if not os.path.exists('toppar'):
             #os.makedirs('toppar')
@@ -513,10 +550,10 @@ class GromacsRun:
     @staticmethod
     def run_GMX_basic(filename='CELL.gro', timeout=2400, nr_of_threads=12, top_name='CELL.top'):
         """
-            Basic logic to start and run GROMACS. Timeout = 2400 s, is appropriate for 
-            about a microsecond simulation to deal with crashes/divisions by zero.
-            Assumes single minimization and single run step. 
-            Assumes 'min.mdp' and 'run.mdp' name for mdps
+        Basic logic to start and run GROMACS. Timeout = 2400 s, is appropriate for 
+        about a microsecond simulation to deal with crashes/divisions by zero.
+        Assumes single minimization and single run step. 
+        Assumes 'min.mdp' and 'run.mdp' name for mdps
         """
         GMX = find_executable("gmx")
         if not GMX:
@@ -528,13 +565,13 @@ class GromacsRun:
             with open(filename, 'r') as gro:
                 lines = gro.readlines()
                 box_size = lines[-1].strip()
-            
+
             editconf= f'gmx editconf -f {filename} -o {filename} -box {box_size} >/dev/null 2>&1'
             os.system(editconf)
-            
+
             grompp_min_cmd = ['gmx', 'grompp', '-p', top_name, '-f', 'min.mdp', '-c', filename, '-o', '1-min', '-maxwarn', '1']
             sp.run(grompp_min_cmd, check=True, stdout=open('gmx_run.log', 'a'), stderr=sp.STDOUT)
-            
+
             mdrun_min_cmd = ['gmx', 'mdrun', '-nt', str(nr_of_threads), '-pin', 'on', '-deffnm', '1-min', '-v']
             sp.run(mdrun_min_cmd, check=True, timeout=timeout, stdout=open('gmx_run.log', 'a'), stderr=sp.STDOUT)
 
@@ -545,11 +582,30 @@ class GromacsRun:
             sp.run(mdrun_run_cmd, check=True, timeout=timeout, stdout=open('gmx_run.log', 'a'), stderr=sp.STDOUT)
 
         except sp.TimeoutExpired:
-            print('The simulation timed out and was terminated. Log saved as "gmx_run.log"')
-            return
+            print('The simulation timed out and was terminated, most likely a division by zero problem. Logged as crash = YES')
+            #let's log the crash
+            crash = 'YES'
+            return crash
         except sp.CalledProcessError as e:
-            print(f'The simulation failed with error {e.returncode}, most likely there are problems in the input parameters. Check the log at "gmx_run.log"')
-            return
+            print(f'The simulation failed with error {e.returncode}, these input parameters are unstable. Logged as crash = YES')
+            #let's log the crash
+            crash = 'YES'
+            return crash
         else:
-            print(f'This simulation completed without any errors, the log information is saved in "gmx_run.log"\n')
-        
+            print(f'This simulation completed without any errors, the log information is saved in "gmx_run.log". Crash = NO\n')
+            #let's log the success
+            crash = 'NO'
+            return crash
+    
+    @staticmethod
+    def calculate_time_per_sim(nsteps):
+        '''
+            Highly advanced method to give a perfect estimate of the time it takes to finish a simulation (this is very coarse estimation...)
+        '''
+        nsteps = int(nsteps)
+        time_per_step = 2200 / 50000000
+        total_time = nsteps * time_per_step / 60
+        rounded_time = round(total_time, 4)
+        return rounded_time
+
+
