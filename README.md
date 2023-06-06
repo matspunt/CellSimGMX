@@ -6,12 +6,30 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
 
 ```
 ├── coord
+│   └── M1_mass72.0_r1.8_fk250.0_sigma0.47_eps1.0_md_Berendsen_no
+│       ├── 1-min.gro
+│       ├── 2-run.gro
+│       ├── CELL.gro
+│       └── CELL.xyz
 ├── log
-├── mdps
+│   └── M1_mass72.0_r1.8_fk250.0_sigma0.47_eps1.0_md_Berendsen_no
+│       ├── 1-min.log
+│       ├── 2-run.log
+│       ├── gmx_run.log
+│       ├── PACKMOL_build-06-06-10-41-24.log
 ├── params
+│   └── M1_mass72.0_r1.8_fk250.0_sigma0.47_eps1.0_md_Berendsen_no
+│       ├── CELL.top
+│       └── forcefield.itp
 ├── README.md
+├── settings
+│   └── M1_mass72.0_r1.8_fk250.0_sigma0.47_eps1.0_md_Berendsen_no
+│       ├── 1-min.tpr
+│       ├── 2-run.tpr
+│       ├── min.mdp
+│       └── run.mdp
+├── simulations_CELL.csv
 ├── src
-│   ├── forcefield.itp
 │   ├── gromacs.py
 │   ├── input.json
 │   ├── lammps.py
@@ -19,19 +37,22 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
 │   ├── packmol.py
 │   └── settings_parser.py
 ├── tools
-│   ├── CELL.gro
-│   ├── cell_layer_tools.py
-│   ├── tools_README
-│   └── using_tools.py
-└── traj [UNSYNCED]
-├── CELL_sim_database.csv
+│   ├── CELL_analysis_library.py
+│   ├── CELL_tools_library.py
+│   ├── dict_examples.py
+│   ├── template_param_range.py
+│   └── template_using_analysis.py
+└── traj
+    ├── UNSYNCED, BUT CONTAINS TRAJECTORIES
+
+
 ```
 
  ```src ``` contains the not-so modular code that hopefully will be packaged into a proper Python package at a later stage.
  
-  ```tools ``` contains modular code that is designed to help with setting up different GROMACS simulations. A description of the functions will follow later. 
+  ```tools ``` contains modular code that is designed to help with setting up different GROMACS simulations.
   
-  Then, all other directories (i.e.  ```coord ```,  ```log ```,  ```mdps ``` and  ```params ```) contain matching subdirectories whose name is defined by the main parameters in their simulations. A central database is utilized (```CELL_sim_database.csv```) in which the simulation is described, and some information about the simulations is written. A description of how this is formatted will follow later. 
+  Then, all other directories (i.e.  ```coord ```,  ```log ```,  ```mdps ``` and  ```params ```) contain matching subdirectories whose name is defined by the main parameters in their simulations. A central database is utilized (```simulations_CELL.csv```) in which the simulation is described, and some information about the simulations is written. A description of how this is formatted will follow later. 
 
 ## Future goals
 
@@ -64,7 +85,4 @@ git clone --branch development https://github.com/matspunt/CELL_MODEL.git
 Or, alternatively, you can use an IDE like VS Code which has integrated git functionality
 
 ## Using the code or tools. 
-1. The ```src``` code is self-explanatory, and classes are well-documented. Just check ```main.py```
-2. The tools are separated in different files 
-MORE WILL BE ADDED LATER WHEN THE TOOLS ARE REWRITTEN. 
-
+1. Instructions will follow. 
