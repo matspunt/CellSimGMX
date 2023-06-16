@@ -99,7 +99,6 @@ for _, row in param_comb.iterrows():
     dir_name = "_".join([f"{key}" for key in ff_dict['bead_types'] if key.startswith('M')] +
                         [f"mass{row['mass']}_r{row['r0_bond']}_fk{row['fk_bond']}_sigma{row['sigma']}_eps{row['epsilon']}",
                          *[str(value) for key, value in mdp_settings.items() if key in ['integrator', 'tcoupl', 'pcoupl']]])
-    
     dir_names.append(dir_name)
 
 #Let's spawn a temporary folder and create a local copy of the database that we will work with

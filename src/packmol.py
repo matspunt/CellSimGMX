@@ -92,7 +92,7 @@ class PackmolExecuterSingleCell(InputSingleCell):
         packmol_inp.write(input_file)
         packmol_inp.close()
         now = datetime.datetime.now()
-        log_file = "PACKMOL_build-{}.log".format(now.strftime("%d-%m-%H-%M-%S"))
+        log_file = "PACKMOL_build-{}.log".format(now.strftime("%H-%M-%S"))
         with open(log_file, "w") as f:
             try:
                 proc = sp.run("{} < {}".format(self.packmol_path, packmol_inp.name), stdout=sp.PIPE, universal_newlines=True, shell=True, timeout=60)
