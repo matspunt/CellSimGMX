@@ -59,6 +59,7 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
 - Format GitHub for single cell simulations, and create subfolders for different amounts of cells. 
 - Start hosting coordinates and trajectories on BIOBACKUP. 
 - Change how database is written, perhaps rewrite to 'sync with database' option?
+- Host slides and literature research on the GitHub. 
 
 ## Future goals
 
