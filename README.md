@@ -48,11 +48,17 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
 
 ```
 
- ```src ``` contains the not-so modular code that hopefully will be packaged into a proper Python package at a later stage.
+ ```src ``` contains code that hopefully will be packaged into a proper Python package at a later stage.
  
-  ```tools ``` contains modular code that is designed to help with setting up different GROMACS simulations.
+  ```tools ``` contains code that is designed to help with setting up different GROMACS simulations.
   
-  Then, all other directories (i.e.  ```coord ```,  ```log ```,  ```mdps ``` and  ```params ```) contain matching subdirectories whose name is defined by the main parameters in their simulations. A central database is utilized (```simulations_CELL.csv```) in which the simulation is described, and some information about the simulations is written. A description of how this is formatted will follow later. 
+  Then, all other directories (i.e.  ```log ```,  ```mdps ``` and  ```params ```) contain matching subdirectories whose name is defined by the main parameters in their simulations. The coordinates (```log ```) are hosted on ```/BIOBACKUP/biofys4/common/Mats/CELL_MODEL```. A central database is utilized (```simulations_CELL.csv```) in which the simulations are described, and some information about the simulations is written. A description of how this is formatted will follow later. 
+
+## GitHub todo
+  
+- Format GitHub for single cell simulations, and create subfolders for different amounts of cells. 
+- Start hosting coordinates and trajectories on BIOBACKUP. 
+- Change how database is written, perhaps rewrite to 'sync with database' option?
 
 ## Future goals
 
@@ -62,14 +68,16 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
     * III) the residence time of two neighbouring particles
     * IV) the geometric shape of a given combination of parameters (obtained from clustering)
     * V) the number of crashes reported for duplicates of that simulation. 
-- [ ] Include a basic toolkit that can create multiple CELL packing (both crystal-like, and localized densities). Shreyas working on this. 
 - [ ] Add rerun capabilites to the ```tools``` that is capable of decomposing the LJ interactions in interactions per bead type. 
 - [ ] Regarding LAMMPS functionality, figure out the force field definition/parsing by looking at e.g. Moltemplate. 
 - [ ] Add Shreyas his Python toy model to the ```tools``` code. 
 
+## Basic parameter description
+
+Currently all simulations in the GitHub were run at 310 K (NVT) and 1 bar (NPT). [Add other standard run parameters here!]
+
 ## Cloning the repo and contributing
 
-0. To be a collaborator, you need to be added to the repo by me (=Mats). If you haven't been added yet, let me know and I will do so. 
 1. We use [PACKMOL](https://github.com/m3g/packmol) to build single cells in predefined compositions. One can install it locally or use a Python packaged version from ```conda``` or ```pip```. These may not be completely up to date with the PACKMOL codebase but we don't use any new features so this should be fine. Currently, there are no other dependencies. I suggest making a special conda environment for this project using ```conda create --name CELL``` and work within that. 
 2. First clone the repo in a local directory 
 ```sh
