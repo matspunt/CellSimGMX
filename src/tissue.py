@@ -12,7 +12,6 @@ from distutils.spawn import find_executable
 # and we will catch errors when we try to convert the cells to reasonable topologies. 
 # 
 # Make this code work with the amount of cells specified in the input.json
-# Need to fit a box around the .gro file after converting --> think about this, should be in GMX class
 
 class TissueConstruction:
     """
