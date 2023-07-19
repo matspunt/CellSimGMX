@@ -71,7 +71,8 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
     * V) the number of crashes reported for duplicates of that simulation. 
 - [ ] Add rerun capabilites to the ```tools``` that is capable of decomposing the LJ interactions in interactions per bead type. 
 - [ ] Regarding LAMMPS functionality, figure out the force field definition/parsing by looking at e.g. Moltemplate. 
-- [ ] Add Shreyas his Python toy model to the ```tools``` code. 
+- [ X ] Add Shreyas his Python toy model to the ```tools``` code. 
+- Extend simulation logic to multiple CELLs (tissues)
 
 ## Basic parameter description
 
