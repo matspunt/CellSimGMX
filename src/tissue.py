@@ -1,7 +1,5 @@
 import numpy as np
 import datetime
-import glob
-import os
 import subprocess as sp
 import tempfile
 from distutils.spawn import find_executable
@@ -12,6 +10,8 @@ from distutils.spawn import find_executable
 # and we will catch errors when we try to convert the cells to reasonable topologies. 
 # 
 # Make this code work with the amount of cells specified in the input.json
+# Also, instead of having the offset be a raw Angstrom value, let this be a ratio of the user radius. I.e.
+# for 0.5 of the radius, you would get a perfectly sheared packing. To be implemented!!!
 
 class TissueConstruction:
     """
@@ -37,7 +37,7 @@ class TissueConstruction:
     @staticmethod
     def replicate_cell_on_grid(xyz_file, nr_of_cells, offset):
         """
-        Replicates a cell on a grid through standard packing The method tries to find the optimal 
+        Replicates a cell on a grid through standard packing. The method tries to find the optimal 
         packing for the specified number of cells on the smallest grid based on the user defined offset. 
         It would most likely be better to turn the offset into a ratio of the CELL radius, based on the JSON
         inputs. 
@@ -270,9 +270,12 @@ class TissueConstruction:
                 print("ERROR: Packmol took longer than 60 seconds to run, this is highly unusual and suggests the packing could not be resolved.")
                 print("Most likely the cell radius and/or the number of particles are incorrectly defined in your input.JSON")
 
+
+### UNIT TESTING, DO NOT TOUCh
+
 #note, the offset in all cases is given in angstrom since we are using the .xyz format
-#TissueConstruction.replicate_cell_on_grid('CELL.xyz', 27, 40)
+TissueConstruction.replicate_cell_on_grid('CELL.xyz', 27, 40)
 TissueConstruction.replicate_cell_on_grid('CELL.xyz', 8, 50)
-#TissueConstruction.replicate_cell_monolayer('CELL.xyz', 2, 40)
-#TissueConstruction.replicate_sheared_cell_layer('CELL.xyz', 54, 40, shearing=0.5)
-#TissueConstruction.random_packing_in_box('CELL.xyz', tolerance = 8, nr_of_cells = 40, box_x = 150, box_y = 150, box_z = 150)
+TissueConstruction.replicate_cell_monolayer('CELL.xyz', 4, 40)
+TissueConstruction.replicate_sheared_cell_layer('CELL.xyz', 54, 40, shearing=0.5)
+TissueConstruction.random_packing_in_box('CELL.xyz', tolerance = 8, nr_of_cells = 40, box_x = 150, box_y = 150, box_z = 150)

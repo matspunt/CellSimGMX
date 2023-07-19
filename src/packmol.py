@@ -118,8 +118,9 @@ class PackmolExecuterSingleCell(InputSingleCell):
                         os.remove(file)
 
 
-input_dir = "/wrk/matspunt/coding/CELL_MODEL/src" 
+### UNIT TESTING, DO NOT TOUCH
+#input_dir = "/wrk/matspunt/coding/CELL_MODEL/src" 
 
-packmol = PackmolExecuterSingleCell(input_dir, input_dir)
-packmol.run_packmol_single_CELL()
+#packmol = PackmolExecuterSingleCell(input_dir, input_dir)
+#packmol.run_packmol_single_CELL()
 

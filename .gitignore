@@ -1,1 +1,10 @@
 traj/
+coord/
+
+*xtc
+*pdb
+__pycache__
+PACKMOL*
+*xyz
+
+src/lammps.py

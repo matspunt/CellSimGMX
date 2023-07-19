@@ -1,9 +1,6 @@
 import os
 import datetime
-import subprocess as sp
 from distutils.spawn import find_executable
-import shutil
-import sys
 
 from settings_parser import JSONParser
 from settings_parser import ForcefieldParserGMX
@@ -21,7 +18,7 @@ class Gromacs_IO(JSONParser, ForcefieldParserGMX):
         and centers its coordinates in the middle of a (cubic) box
         
     def build_GMX_top_single_CELL(self, gro_path):
-        Builds .itp from a ssingle .gro file based on the JSON input settings
+        Builds .itp from a single .gro file based on the JSON input settings
     """
 
     def __init__(self, json_directory, forcefield_directory):
@@ -190,14 +187,14 @@ class Gromacs_IO(JSONParser, ForcefieldParserGMX):
             top.close()
             print("A topology file has been constructed")
 
-### WORKING WITH THE FUNCTIONS
+### UNIT TESTING, DO NOT TOUCH
 json_directory = "/wrk/matspunt/coding/CELL_MODEL/src"
 forcefield_directory = "/wrk/matspunt/coding/CELL_MODEL/src"
 gromacs_io = Gromacs_IO(json_directory, forcefield_directory)
 
-#gromacs_io.convert_xyz_to_gro("CELL.xyz", "CELL.gro", edge_offset=3.0)
-#gromacs_io.convert_xyz_to_gro("CELL_27_standard.xyz", "CELL_27_standard.gro", edge_offset=3.0)
+gromacs_io.convert_xyz_to_gro("CELL.xyz", "CELL.gro", edge_offset=3.0)
+gromacs_io.convert_xyz_to_gro("CELL_27_standard.xyz", "CELL_27_standard.gro", edge_offset=3.0)
 gromacs_io.convert_xyz_to_gro("CELL_8_standard.xyz", "CELL_8_standard.gro", edge_offset=3.0)
-#gromacs_io.convert_xyz_to_gro("CELL_2_monolayer.xyz", "CELL_2_monolayer.gro", edge_offset=3.0)
+gromacs_io.convert_xyz_to_gro("CELL_4_monolayer.xyz", "CELL_4_monolayer.gro", edge_offset=3.0)
 
 
