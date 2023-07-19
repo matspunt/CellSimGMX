@@ -185,16 +185,16 @@ class Gromacs_IO(JSONParser, ForcefieldParserGMX):
                 system =  f"\n[ system ]\nCELL MODEL\n\n[ molecules ]\nCELL    {self.Simulation_nr_cells}" 
                 top.write(system)
             top.close()
-            print("A topology file has been constructed")
+            print("SUCCES: the topology file has been created based on the PACKMOL single CELL")
 
 ### UNIT TESTING, DO NOT TOUCH
-json_directory = "/wrk/matspunt/coding/CELL_MODEL/src"
-forcefield_directory = "/wrk/matspunt/coding/CELL_MODEL/src"
-gromacs_io = Gromacs_IO(json_directory, forcefield_directory)
+#json_directory = "/wrk/matspunt/coding/CELL_MODEL/src"
+#forcefield_directory = "/wrk/matspunt/coding/CELL_MODEL/src"
+#gromacs_io = Gromacs_IO(json_directory, forcefield_directory)
 
-gromacs_io.convert_xyz_to_gro("CELL.xyz", "CELL.gro", edge_offset=3.0)
-gromacs_io.convert_xyz_to_gro("CELL_27_standard.xyz", "CELL_27_standard.gro", edge_offset=3.0)
-gromacs_io.convert_xyz_to_gro("CELL_8_standard.xyz", "CELL_8_standard.gro", edge_offset=3.0)
-gromacs_io.convert_xyz_to_gro("CELL_4_monolayer.xyz", "CELL_4_monolayer.gro", edge_offset=3.0)
+#gromacs_io.convert_xyz_to_gro("CELL.xyz", "CELL.gro", edge_offset=3.0)
+#gromacs_io.convert_xyz_to_gro("CELL_27_standard.xyz", "CELL_27_standard.gro", edge_offset=3.0)
+#gromacs_io.convert_xyz_to_gro("CELL_8_standard.xyz", "CELL_8_standard.gro", edge_offset=3.0)
+#gromacs_io.convert_xyz_to_gro("CELL_4_monolayer.xyz", "CELL_4_monolayer.gro", edge_offset=3.0)
 
 

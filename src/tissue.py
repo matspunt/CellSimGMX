@@ -274,8 +274,8 @@ class TissueConstruction:
 ### UNIT TESTING, DO NOT TOUCh
 
 #note, the offset in all cases is given in angstrom since we are using the .xyz format
-TissueConstruction.replicate_cell_on_grid('CELL.xyz', 27, 40)
-TissueConstruction.replicate_cell_on_grid('CELL.xyz', 8, 50)
-TissueConstruction.replicate_cell_monolayer('CELL.xyz', 4, 40)
-TissueConstruction.replicate_sheared_cell_layer('CELL.xyz', 54, 40, shearing=0.5)
-TissueConstruction.random_packing_in_box('CELL.xyz', tolerance = 8, nr_of_cells = 40, box_x = 150, box_y = 150, box_z = 150)
+#TissueConstruction.replicate_cell_on_grid('CELL.xyz', 27, 40)
+#TissueConstruction.replicate_cell_on_grid('CELL.xyz', 8, 50)
+#TissueConstruction.replicate_cell_monolayer('CELL.xyz', 4, 40)
+#TissueConstruction.replicate_sheared_cell_layer('CELL.xyz', 54, 40, shearing=0.5)
+#TissueConstruction.random_packing_in_box('CELL.xyz', tolerance = 8, nr_of_cells = 40, box_x = 150, box_y = 150, box_z = 150)
