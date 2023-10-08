@@ -1,0 +1,9 @@
+#include "CELL.itp"
+
+[ system ]
+; Name
+Cell toy model
+
+[ molecules ]
+; Compound        #mols
+CELL                64

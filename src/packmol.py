@@ -51,11 +51,11 @@ class InputSingleCell(JSONParser, ForcefieldParserGMX):
         inp = f"tolerance {self.PACKMOL_tol}\nfiletype xyz\noutput CELL.xyz\nmovebadrandom\n"
         
         for bead in bead_names: #create the PACKMOL settings for each bead type 
-            if bead != "C":
+            if bead != "N":
                 dr = self.PACKMOL_cell_radius - 0.1 #for optimal packing, the inner radius should be 0.1 Angstrom smaller than the cell radius
-                #the center bead name is assumed to be called as "C.xyz"!
-                inp += f"\nstructure {bead}.xyz\n  number 90\n  atoms 1\n    inside {self.PACKMOL_init_shape} 0. 0. 0. {self.PACKMOL_cell_radius}\n  end atoms\n  atoms 1\n    outside {self.PACKMOL_init_shape} 0. 0. 0. {dr}\n  end atoms\nend structure\n\n"
-        inp += f"structure C.xyz\n  number 1\n  center\n  fixed 0. 0. 0. 0. 0. 0.\nend structure\n"
+                #the center bead name is assumed to be called as "N.xyz"!
+                inp += f"\nstructure {bead}.xyz\n  number 180\n  atoms 1\n    inside {self.PACKMOL_init_shape} 0. 0. 0. {self.PACKMOL_cell_radius}\n  end atoms\n  atoms 1\n    outside {self.PACKMOL_init_shape} 0. 0. 0. {dr}\n  end atoms\nend structure\n\n"
+        inp += f"structure N.xyz\n  number 1\n  center\n  fixed 0. 0. 0. 0. 0. 0.\nend structure\n"
         
         return inp
 
@@ -119,8 +119,8 @@ class PackmolExecuterSingleCell(InputSingleCell):
 
 
 ### UNIT TESTING, DO NOT TOUCH
-#input_dir = "/wrk/matspunt/coding/CELL_MODEL/src" 
+input_dir = "/wrk/matspunt/coding/CELL_MODEL/src" 
 
-#packmol = PackmolExecuterSingleCell(input_dir, input_dir)
-#packmol.run_packmol_single_CELL()
+packmol = PackmolExecuterSingleCell(input_dir, input_dir)
+packmol.run_packmol_single_CELL()
 

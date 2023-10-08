@@ -1,0 +1,20 @@
+Compiled SIMD: AVX2_256, but for this host/run AVX_512 might be better (see
+log).
+Reading file /wrk/matspunt/coding/CELL_MODEL/testing/gmxapi/mdrun_924e24ee5e1c6a65eed6c3f498b7469d_i0_0/topol.tpr, VERSION 2022.3 (double precision)
+Using 1 MPI thread
+Using 16 OpenMP threads 
+
+
+Polak-Ribiere Conjugate Gradients:
+   Tolerance (Fmax)   =  5.00000e+00
+   Number of steps    =        10000
+   F-max             =  6.32244e+09 on atom 11152
+   F-Norm            =  3.32287e+08
+
+
+writing lowest energy coordinates.
+
+Polak-Ribiere Conjugate Gradients converged to Fmax < 5 in 1053 steps
+Potential Energy  = -7.41581404647930e+04
+Maximum force     =  4.34696539362290e+00 on atom 8183
+Norm of force     =  2.35645343712909e-01

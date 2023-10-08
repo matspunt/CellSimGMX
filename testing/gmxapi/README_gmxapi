@@ -1,0 +1,8 @@
+How to get gmxapi working:
+
+1) source GMXRC verson: source /home/group/cubbli/opt/wkulig/cubbli22/gromacs-2022.3/bin/GMXRC
+2) conda install openmpi-mpicc
+3) export MPICC=`which mpicc`
+4) pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
+5) pip install gmxapi
+6) conda install numpy scipy #other packages
