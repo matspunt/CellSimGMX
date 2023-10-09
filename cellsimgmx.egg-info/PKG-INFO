@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: cellsimgmx
+Version: 0.0.1
+Summary: A 3D discrete element framework simulator for epithelial tissues using GROMACS
+Home-page: https://github.com/matspunt/CellSimGMX
+Author: Mats Punt
+Author-email: mats.punt@helsinki.fi
+License: GPL V3
+License-File: LICENSE

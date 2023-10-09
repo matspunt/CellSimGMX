@@ -4,7 +4,7 @@
             "description": "The total number of particles on the surface. ",
             "value": 180
         },
-        "junction_bead_ratio": {
+        "junction_bead_ratio": { 
             "description": "Defines the number of evenly distributed specific junction beads, set as a ratio of the total number of particles",
             "value": 0.1
         },
@@ -27,7 +27,7 @@
             "value": 64
         },
         "tissue_packing": {
-            "description": "The packing configuration of the tissue. ",
+            "description": "The packing configuration of the tissue. Allows 'hexagonal', 'monolayer",
             "value": "hexagonal"
         }
     },

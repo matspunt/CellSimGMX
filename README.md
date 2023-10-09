@@ -22,8 +22,9 @@ git clone --branch development https://github.com/matspunt/CELL_MODEL.git
 Or, alternatively, you can use an IDE like VS Code which has integrated git functionality
 
 ## Installing and using the code
-1. To install, ```conda``` or ```pip``` virtual environment is recommended. Install from source ````pip install -e .``` in source directory (depends on ```setuptools```). 
-2. Package runs with ```cellsimgmx``` or ```python3 -m cellsimgx``` in activated environment.  
+1. To install, ```conda``` or ```pip``` virtual environment is recommended. Install from source ```pip install -e .``` in source directory (you need ```setuptools``` installed). 
+2. Add pip console scripts to PATH if not already there: ```export PATH="~/.local/bin:$PATH"``` in ```~/.bashrc```
+2. Package then runs with ```cellsimgmx```. Check options with ```cellsimgmx -h```, or you can use ```python3 -m cellsimgx``` if you do not want to use the console script.  
 3. 
 
 ## Logic of the code and basic usage tutorial

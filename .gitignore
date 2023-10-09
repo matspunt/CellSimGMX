@@ -3,8 +3,10 @@ CellSimGMX.egg-info
 build/
 __pycache__
 
-# Exclude GMX files
+# Exclude GMX & programme files
 *xtc
 *gro
 *mdp
 *tpr
+*log
+
