@@ -1,5 +1,5 @@
 # Exclude build information from pip
-CellSimGMX.egg-info
+cellsimgmx.egg-info
 build/
 __pycache__
 
