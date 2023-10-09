@@ -1,1 +1,0 @@
-## Reading the existing database.csv using Pandas. 

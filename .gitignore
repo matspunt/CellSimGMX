@@ -1,10 +1,10 @@
-traj/
-coord/
-
-*xtc
-*pdb
+# Exclude build information from pip
+CellSimGMX.egg-info
+build/
 __pycache__
-PACKMOL*
-*xyz
 
-src/lammps.py
+# Exclude GMX files
+*xtc
+*gro
+*mdp
+*tpr

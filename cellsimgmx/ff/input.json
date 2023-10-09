@@ -1,0 +1,54 @@
+{
+    "Cell": {
+        "nr_of_particles": {
+            "description": "The total number of particles on the surface. ",
+            "value": 180
+        },
+        "junction_bead_ratio": {
+            "description": "Defines the number of evenly distributed specific junction beads, set as a ratio of the total number of particles",
+            "value": 0.1
+        },
+        "cell_radius": {
+            "description": "The radius of a single cell in nm ",
+            "value": 18
+        },
+        "initial_packing_shape": {
+            "description": "The initial shape for packing the cells. Allows 'sphere', 'cube' and 'ellipsoid'",
+            "value": "sphere"
+        },
+        "nearest_neighbour_springs": {
+            "description": "The amount of neighbours on the surface (membrane) of the cell between which harmonic bonds are defined",
+            "value": 6
+        }
+    },
+    "Tissue": {
+        "number_of_cells": {
+            "description": "The number of cells in the system",
+            "value": 64
+        },
+        "tissue_packing": {
+            "description": "The packing configuration of the tissue. ",
+            "value": "hexagonal"
+        }
+    },
+    "Matrix": {
+        "matrix_on_off": {
+            "description": "Set matrix on or off in simulation. ",
+            "value": "on"
+        },
+        "nr_of_layers": {
+            "description": "Sets matrix thickness, i.e. the number of layers",
+            "value": 1
+        }
+    },
+    "Simulation": {
+            "timestep": {
+                "description": "The timestep used in GMX (defined as picoseconds)",
+                "value": 0.04
+            },
+            "integrator": {
+                "description": "Sets the integrator. Allows for 'leapfrog' and 'langevin' where 'langevin' disables Tcoupl and sets ld-seed. ",
+                "value": "leapfrog"
+            }
+    }
+}
