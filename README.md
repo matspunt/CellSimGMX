@@ -56,4 +56,4 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
 
 ## NOTE
   
-- THIS BRANCH IS OBSOLETE AND WILL BE SLOWLY INTEGRATED INTO ```no_packmol``` branch!
+- THIS BRANCH IS OBSOLETE AND WILL BE SLOWLY INTEGRATED INTO ```no_packmol``` branch!! 
