@@ -6,5 +6,6 @@ coord/
 __pycache__
 PACKMOL*
 *xyz
+*gro
 
 src/lammps.py

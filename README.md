@@ -54,45 +54,6 @@ This is a repo for the CELL_MODEL project. The file structure of the repo is the
   
   Then, all other directories (i.e.  ```log ```,  ```mdps ``` and  ```params ```) contain matching subdirectories whose name is defined by the main parameters in their simulations. The coordinates (```log ```) are hosted on ```/BIOBACKUP/biofys4/common/Mats/CELL_MODEL```. A central database is utilized (```simulations_CELL.csv```) in which the simulations are described, and some information about the simulations is written. A description of how this is formatted will follow later. 
 
-## GitHub todo
+## NOTE
   
-- Format GitHub for single cell simulations, and create subfolders for different amounts of cells. 
-- Start hosting coordinates and trajectories on BIOBACKUP. 
-- Change how database is written, perhaps rewrite to 'sync with database' option?
-- Host slides and literature research on the GitHub. 
-
-## Future goals
-
-- [ ] Add quality control metrics that can give insight in the behaviour of the simulations. These include things such as the 
-    * I) averaged density of particles per a given area
-    * II) the Radial Distribution Functions of a given particle type
-    * III) the residence time of two neighbouring particles
-    * IV) the geometric shape of a given combination of parameters (obtained from clustering)
-    * V) the number of crashes reported for duplicates of that simulation. 
-- [ ] Add rerun capabilites to the ```tools``` that is capable of decomposing the LJ interactions in interactions per bead type. 
-- [ ] Regarding LAMMPS functionality, figure out the force field definition/parsing by looking at e.g. Moltemplate. 
-- [ X ] Add Shreyas his Python toy model to the ```tools``` code. 
-- Extend simulation logic to multiple CELLs (tissues)
-
-## Basic parameter description
-
-Currently all simulations in the GitHub were run at 310 K (NVT) and 1 bar (NPT). [Add other standard run parameters here!]
-
-## Cloning the repo and contributing
-
-1. We use [PACKMOL](https://github.com/m3g/packmol) to build single cells in predefined compositions. One can install it locally or use a Python packaged version from ```conda``` or ```pip```. These may not be completely up to date with the PACKMOL codebase but we don't use any new features so this should be fine. Currently, there are no other dependencies. I suggest making a special conda environment for this project using ```conda create --name CELL``` and work within that. 
-2. First clone the repo in a local directory 
-```sh
-git clone --branch master https://github.com/matspunt/CELL_MODEL.git
-```
- The ```master``` branch will be kept stable. Development will happen in the ```development``` branch. 
- 
-3. If you are contributing to the development branch, I recommend you to clone it in a separate directory since dynamic branches can get tricky with version control. To clone the ```development``` branch, simply repeat the command:
-```sh
-git clone --branch development https://github.com/matspunt/CELL_MODEL.git
-```
-4. Within the ```development``` branch, you can push commits to the branch, see here for instructions: https://linuxhint.com/push-to-specific-branch-in-git/
-Or, alternatively, you can use an IDE like VS Code which has integrated git functionality
-
-## Using the code or tools. 
-1. Instructions will follow. 
+- THIS BRANCH IS OBSOLETE AND WILL BE SLOWLY INTEGRATED INTO ```no_packmol``` branch!
