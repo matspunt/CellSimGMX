@@ -1,2 +1,0 @@
-[console_scripts]
-cellsimgmx = cellsimgmx.__main__:main

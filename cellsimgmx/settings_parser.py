@@ -46,8 +46,19 @@ class JSONParser:
         json_path (str): The path to the JSON input file.
         data (dict): The loaded JSON data.
     """
+
+    _instance = None
+
+    # Class holds data so use a Singleton pattern to ensure only a single instance is created
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.json_values = None 
+        return cls._instance
+    
     def __init__(self):
         self.cli_parser = CLIParser()
+        #these do not need to be in the Singleton pattern as we only use them to obtain 'json_values'
         self.json_path = None
         self.data = None
         
@@ -119,7 +130,7 @@ class JSONParser:
                             logging.warning(f"You have specified {value} cells in the system, this is possible but will significantly slow down simulations!")
 
                     if var_name == "initial_packing_shape":
-                        if not (isinstance(value, str) and value in ['sphere', 'cube', 'ellipsoid']):
+                        if not (isinstance(value, str) and value in ['spherical', 'cuboid', 'ellipsoid']):
                             logging.error(f"{value} is not a valid cell shape!")
                             sys.exit(1)
 
@@ -127,6 +138,9 @@ class JSONParser:
                         if not (isinstance(value, str) and value in ['hexagonal', 'monolayer']):
                             logging.error(f"{value} is not a valid packing for tissues!")
                             sys.exit(1)
+                            
+                    ###### May be extended if needed!!!!
+                    ###### Correct later for final JSON file!
                             
         if args.verbose:
             print(f"\nVERBOSE MODE ENABLED. Parameters read from: {self.json_path}.") 
@@ -139,6 +153,7 @@ class JSONParser:
         for var_name, value in json_values.items():
             logging.info(f"{var_name} : {value}")
 
+        self.json_values = json_values #store the JSON values in the Class
 
 class ForcefieldParserGMX:
     """
@@ -149,13 +164,22 @@ class ForcefieldParserGMX:
         nonbond_params (dict)
         bondtypes (dict)
     """
+    
+    #Use a Singleton pattern too here such that only one instance is created that is recycled
+    _instance = None 
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(ForcefieldParserGMX, cls).__new__(cls)
+            cls._instance.atomtypes = {}
+            cls._instance.nonbond_params = {}
+            cls._instance.bondtypes = {}
+        return cls._instance
+    
     def __init__(self):
         self.cli_parser = CLIParser()
         self.itp_path = None
-        self.atomtypes = {}
-        self.nonbond_params = {}
-        self.bondtypes = {}
-        
+
     def parse_GMX_ff(self):
         """
             Looks for a GMX compatible .itp file in the user-specific directory. Then uses helper functions to parse the 
@@ -190,7 +214,7 @@ class ForcefieldParserGMX:
             try:
                 with open(self.itp_path, 'r') as file:
                     self.itp_data = file.read()
-                logging.info(f"\nUsing force field input from: {self.itp_path}")
+                logging.info(f"Using force field input from: {self.itp_path}")
             except FileNotFoundError:
                 logging.error("No .itp files could be found in your '--ff-dir' entry. Are you in the right directory and is your file extension correct?")
         else:
@@ -214,7 +238,7 @@ class ForcefieldParserGMX:
         
         if args.verbose:
             atom_names = list(self.atomtypes.keys())
-            print(f"\nVERBOSE MODE ENABLED. Read the force field from {self.itp_path}:")
+            print(f"\nVERBOSE MODE ENABLED. Succesfully read the force field from {self.itp_path}. ")
             print("Your system contains the following particle types:")
             print(atom_names)
             

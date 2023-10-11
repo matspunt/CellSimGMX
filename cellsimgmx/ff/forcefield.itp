@@ -40,7 +40,6 @@
    
    ; interactions between membrane-junction beads
 
-  
    ; M3 ranges from eps 2.0 - 5.5. Model based on R-bead in Martini 3 (sigma R-R = 0.47)
    ; nonbonded parameters are excluded by default for single bonds (nrexcl = 1) so there is no point to defining center-membrane LJ interactions
    ; center-center LJ interactions might be necessary to prevent CELLs from colliding with each other     
@@ -48,7 +47,7 @@
 [ bondtypes]
 ;  i   j  func    r0      fk   
    C   M1   1     1.85    250     ; minimum force constant before energy leakage (02/10/23)
-   C   M2   1     1.85    500     ; minimum 
+   C   M2   1     1.85    500     ; minimum force constant before compressibility is too great
 
 ; [ pairtypes ] can use this to explicitly set sigma and epsilon for particle interactions at a later stage. Currently unused
 

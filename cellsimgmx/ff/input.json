@@ -10,11 +10,11 @@
         },
         "cell_radius": {
             "description": "The radius of a single cell in nm ",
-            "value": 18
+            "value": 1.85
         },
         "initial_packing_shape": {
-            "description": "The initial shape for packing the cells. Allows 'sphere', 'cube' and 'ellipsoid'",
-            "value": "sphere"
+            "description": "The initial shape for packing the cells. Allows 'spherical', 'cuboid' and 'ellipsoid'",
+            "value": "spherical"
         },
         "nearest_neighbour_springs": {
             "description": "The amount of neighbours on the surface (membrane) of the cell between which harmonic bonds are defined",
