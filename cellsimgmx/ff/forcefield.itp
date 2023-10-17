@@ -53,6 +53,10 @@
    ; surface bondtypes (n-nearest neighbour scheme)
    M1  M1   1     0.10    500
    M2  M2   1     0.10    600
+   M1  J1   1     0.10    300
+   M1  J2   1     0.10    200
+   M2  J1   1     0.10    250
+   M2  J2   1     0.10    254
 
 ; [ pairtypes ] can use this to explicitly set sigma and epsilon for particle interactions at a later stage. Currently unused
 

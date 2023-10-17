@@ -138,7 +138,7 @@ class CellConstructor:
             print(f"\nVERBOSE MODE ENABLED. Currently creating a single cell object with {nr_of_particles} particles...\n") 
         
             ### if --verbose flag enabled, save an image plot of the packed cell as a quick reference
-            fig = plt.figure()
+            fig = plt.figure(figsize=(10, 8)) 
             ax = fig.add_subplot(111, projection='3d')
 
             x = [particle[0] for particle in self.particles]
@@ -153,7 +153,7 @@ class CellConstructor:
             now = datetime.datetime.now()
             figname = "CELL_packing-{}.png".format(now.strftime("%H-%M-%S"))
             plt.savefig(f"{args.output_dir}/{figname}")
-            print(f"{figname} has been created. Please ensure the packing is visually correct, should you encounter any problems at a later stage. ")
+            print(f"{args.output_dir}/{figname} has been created. Please ensure the packing is visually correct, should you encounter any problems at a later stage. ")
             
         return self.particles
     
@@ -265,6 +265,9 @@ class CellTopology:
             
             Output:
                 A dict (self.nnneighbours) with as keys the indices of the connected neighbours and as value their atomnames. 
+                
+                If --verbose is enabled:
+                    A plot 'CELL_surface_bonds-{time}.png' of the n-neighbour scheme based on the user input to validate. 
         """
         args = self.cli_parser.parse_args()
         
@@ -272,23 +275,80 @@ class CellTopology:
         nearest_neighbour_springs = json_values["nearest_neighbour_springs"]
         
         if nearest_neighbour_springs != "off":
+            logging.info(f"Nearest neighbour springs are set to '{nearest_neighbour_springs}' neighbours")
             coords, atomnames = zip(*self.atomnames.items()) #store information separately for indexing later in the loop
 
+            #construct the nearest neigbour information
             tree = KDTree(coords)
 
             for index, (coord, atomname) in enumerate(self.atomnames.items()):
-                _, neighbour_indices = tree.query(coord, k=3)  # Adjust k as needed
+                _, neighbour_indices = tree.query(coord, k=nearest_neighbour_springs+1) 
                 key = f"{index + 1} {atomname}"
+                #save the neighbour information as a tuple[int, str] where int = index and str = atomname
                 self.nnneighbours[key] = [(i+1, atomnames[i]) for i in neighbour_indices if i != index]
-                
-            print(self.nnneighbours)
             
-            """"
-            SKIP CENTER BEAD IN NEIGHBOUR LIST!!!!!!
-            """
+            if '1 C' in self.nnneighbours: #remove the entry of the center bead from this dict!
+                del self.nnneighbours['1 C']
+            
+            if args.verbose:
+                print(f"\nVERBOSE MODE ENABLED. You set n-nearest neighbour springs to '{nearest_neighbour_springs}'.")
+                
+                x, y, z = zip(*coords) #extract the coordinates of the particles
+
+                fig = plt.figure(figsize=(15, 8))
+
+                # Create two plots, one with all surface bonds, and one with only a single atom and its neighbours
+                # to verify for the user (a graphical check is easier than manually checking the topology)
+                ax_all = fig.add_subplot(1, 2, 1, projection='3d')
+                ax_all.scatter(x, y, z)
+                for key, neighbours in self.nnneighbours.items():
+                    index, atom_name = key.split()
+                    index = int(index)
+                    for neighbour_index, neighbour_name in neighbours:
+                        neighbour_index = int(neighbour_index)
+                        ax_all.plot([x[index - 1], x[neighbour_index - 1]],
+                                    [y[index - 1], y[neighbour_index - 1]],
+                                    [z[index - 1], z[neighbour_index - 1]])
+
+                ax_all.set_xlabel('X')
+                ax_all.set_ylabel('Y')
+                ax_all.set_zlabel('Z')
+                ax_all.set_title('A. CELL: all surface bonds')
+
+                for key in self.nnneighbours.keys():
+                    index, name = key.split()
+                    if int(index) == 178:
+                        selected_atom_name = name
+                        break
+                        # need both the index and atomname to find the right key
+                
+                #this atom (178) is quite central, use it to draw surface bonds
+                # can pick any other index here if needed
+                atom_key = f"{178} {selected_atom_name}"
+                neighbours = self.nnneighbours.get(atom_key, [])
+
+                ax_one_atom = fig.add_subplot(1, 2, 2, projection='3d')
+                ax_one_atom.scatter(x, y, z)
+                for neighbour_index, neighbour_name in neighbours:
+                    neighbour_index = int(neighbour_index)
+                    ax_one_atom.plot([x[178 - 1], x[neighbour_index - 1]],
+                                    [y[178 - 1], y[neighbour_index - 1]],
+                                    [z[178 - 1], z[neighbour_index - 1]])
+
+                ax_one_atom.set_xlabel('X')
+                ax_one_atom.set_ylabel('Y')
+                ax_one_atom.set_zlabel('Z')
+                ax_one_atom.set_title(f'B. CELL: single atom and {nearest_neighbour_springs} neighbours')
+
+                now = datetime.datetime.now()
+                figname = "CELL_surface_bonds-{}.png".format(now.strftime("%H-%M-%S"))
+                plt.savefig(f"{args.output_dir}/{figname}")
+                print(f"Saved a figure of n-nearest neighbour springs to '{args.output_dir}/{figname}'")
+                logging.info(f"Saved a figure of n-nearest neighbour springs to '{args.output_dir}/{figname}'")
             
         else:
-            #if nearest neighbour springs are disabled then do nothing in this function
+            #if nearest neighbour springs are disabled then do nothing in this function but do tell the user
+            logging.warning(f"Surface bonds (n-nearest neighbour) is set to '{nearest_neighbour_springs}'")
             pass 
  
     def build_gro_file_cell(self):
@@ -323,19 +383,20 @@ class CellTopology:
 
                 gro.write(line)
             gro.write("{:>10.5f}{:>10.5f}{:>10.5f}\n".format(5.000, 5.000, 5.000))  # Add box (arbitrary size)
+        gro.close()
         
-        logging.info(f"Built a .gro file {groname} of a single cell. ")
+        logging.info(f"Built a .gro file '{args.output_dir}/{groname}' of a single cell. ")
         
         if args.verbose:
-            print(f"\nVERBOSE MODE ENABLED. A coordinate file {groname} has been saved. Please inspect it in case problems arise later. \n")
+            print(f"\nVERBOSE MODE ENABLED. A coordinate file '{args.output_dir}/{groname}' has been saved. Please inspect it in case problems arise later.")
 
     def build_top_from_cell(self):
         """
             Uses output from assign_atom_names() and find_nearest_neigbors() to build a topology based on the specified force field. 
-            Basically links self.atomnames dict information (the beads in the cell) to ForceFieldParserGMX() class information. 
+            Basically links self.atomnames and self.nnneighbours dict (the beads in the cell) to ForceFieldParserGMX() class information. 
             
             Outputs:
-                CELL-{timeprint}.itp file on disk
+                CELL-{timeprint}.itp file on disk in output dir. 
         """
         args = self.cli_parser.parse_args()
         
@@ -372,7 +433,31 @@ class CellTopology:
                                 #by construction, the Center bead is indexed as 1
                                 itp.write(" 1  {:<3s} {:<3s} {:<3s} {:<3s} \n".format(str(atom_index), str(entry['func']), str(entry['r0']), str(entry['fk'])))
                                 parsed = True
-        
-            #Finally, we take the self.nnneighbour dict
+
+            #Finally, we take the self.nnneighbour dict and use it to parse those bonds separately
+            
+            # first check if the dict is not empty (that would mean the setting was disabled!)
+            if not self.nnneighbours:
+                pass
+            
+            else:
+                itp.write("; membrane surface neighbour bonds\n")
+                for index_atomname, neighbours in self.nnneighbours.items():
+                    #extract the atom name and index of each surface particle in the system
+                    atom_index, atom_name= index_atomname.split() #str datatype, so need to split it
+
+                    for neighbour in neighbours:
+                        #then extract the name and indices of its neighbours
+                        neighbour_atom_index, neighbour_atom_name = neighbour #do not need to split a tuple!
+
+                        for bond, entry in self.ff_parser.bondtypes.items():
+                            #find the right bonded type, make sure center bead entries are explicitly ignored (order does not matter here)
+                            if atom_name in bond and neighbour_atom_name in bond and "C" not in bond:
+                                itp.write(" {:<3s} {:<3s} {:<3s}   {:<3s}   {:<3s} \n".format(str(atom_index), str(neighbour_atom_index), str(entry['func']), str(entry['r0']), str(entry['fk'])))
                         
         itp.close()
+        logging.info(f"Built a topology file '{args.output_dir}/{itpname}' of a single cell. ")
+        
+        if args.verbose:
+            print(f"\nVERBOSE MODE ENABLED. A topology file '{args.output_dir}/{itpname}' has been built")
+        

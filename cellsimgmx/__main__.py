@@ -22,7 +22,7 @@ def main():
     ### LOGGING DETAILS
     ## Todo: save .log in output-dir!
     logging.basicConfig(
-    filename = "cellsimgmx-{}.log".format(now.strftime("%H-%M-%S")),
+    filename = "cellsimgmx-{}.log".format(now.strftime("%H-%M")),
     level=logging.INFO, #print >INFO msgs to logfile
     format='%(asctime)s - %(levelname)s - %(message)s'
     )
@@ -42,13 +42,12 @@ def main():
     json_parser.load_json()
     json_parser.extract_json_values()
     ff_parser.parse_GMX_ff()
-   
-    #save a .gro and .itp    
+     
     celltopology = CellTopology()
     celltopology.assign_atom_names()
     celltopology.find_nearest_neighbours()
-    #celltopology.build_gro_file_cell()
-    #celltopology.build_top_from_cell()
+    celltopology.build_gro_file_cell()
+    celltopology.build_top_from_cell()
     
     logging.info("Succesfully ended programme execution. No errors were found. \n")
     
