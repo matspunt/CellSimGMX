@@ -10,7 +10,8 @@ setup(
     license='GPL V3',
     packages=find_packages(),
     install_requires=['numpy',                     
-                      'matplotlib'],
+                      'matplotlib', 
+                      'scipy'],
     entry_points = {
         "console_scripts": [
             "cellsimgmx = cellsimgmx.__main__:main",

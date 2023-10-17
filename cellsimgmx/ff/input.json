@@ -1,23 +1,35 @@
 {
     "Cell": {
         "nr_of_particles": {
-            "description": "The total number of particles on the surface. ",
+            "description": "The total number of particles in the surface membrane.",
             "value": 180
         },
+        "initial_packing_shape": {
+            "description": "The initial shape for packing the cells. Allows 'spherical', 'cuboid' and 'ellipsoid'",
+            "value": "spherical"
+        },
+        "membrane_type": { 
+            "description": "Sets the membrane distribution. Options 'even', 'segmented'. In case of 'segmented' and two beads, generates a half sphere. ",
+            "value": "even"
+        },
+        "membrane_beads": { 
+            "description": "Sets what type of membrane beads are used in the cell. Options: 'M1', 'M1, M2' etc.",
+            "value": "M1, M2"
+        },
+        "junction_beads": { 
+            "description": "Sets what type of junction beads are used in the cell (comma separated). Options: 'off', 'J1', 'J1, J2' etc",
+            "value": "J1"
+        },
         "junction_bead_ratio": { 
-            "description": "Defines the number of evenly distributed specific junction beads, set as a ratio of the total number of particles",
+            "description": "Defines the number of evenly distributed specific junction beads, set as a ratio of the total number of particles. Ignored if 'junction_beads = off'!",
             "value": 0.1
         },
         "cell_radius": {
             "description": "The radius of a single cell in nm ",
             "value": 1.85
         },
-        "initial_packing_shape": {
-            "description": "The initial shape for packing the cells. Allows 'spherical', 'cuboid' and 'ellipsoid'",
-            "value": "spherical"
-        },
         "nearest_neighbour_springs": {
-            "description": "The amount of neighbours on the surface (membrane) of the cell between which harmonic bonds are defined",
+            "description": "The amount of neighbours on the surface (membrane) of the cell between which harmonic bonds are defined. Accepts 'off', '1', '2' and any positive integer",
             "value": 6
         }
     },
@@ -42,10 +54,14 @@
         }
     },
     "Simulation": {
-            "timestep": {
-                "description": "The timestep used in GMX (defined as picoseconds)",
-                "value": 0.04
-            },
+        "simulation_type": {
+            "description": "Sets the type of simulation, either 'cell' or 'tissue'. In case of 'cell', all tissue options are ignored in the input.JSON. This option is useful to run analysis on single cells",
+            "value": "cell"
+        },
+        "timestep": {
+            "description": "The timestep used in GMX (defined as picoseconds)",
+            "value": 0.04
+        },
             "integrator": {
                 "description": "Sets the integrator. Allows for 'leapfrog' and 'langevin' where 'langevin' disables Tcoupl and sets ld-seed. ",
                 "value": "leapfrog"

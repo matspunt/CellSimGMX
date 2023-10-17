@@ -46,8 +46,13 @@
 
 [ bondtypes]
 ;  i   j  func    r0      fk   
+   ; center to surface bonds
    C   M1   1     1.85    250     ; minimum force constant before energy leakage (02/10/23)
    C   M2   1     1.85    500     ; minimum force constant before compressibility is too great
+   C   J1   1     1.85    300 
+   ; surface bondtypes (n-nearest neighbour scheme)
+   M1  M1   1     0.10    500
+   M2  M2   1     0.10    600
 
 ; [ pairtypes ] can use this to explicitly set sigma and epsilon for particle interactions at a later stage. Currently unused
 

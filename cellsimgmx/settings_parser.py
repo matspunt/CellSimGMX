@@ -17,6 +17,7 @@ import json
 import glob
 import sys
 import os
+import re
 
 class CLIParser:
     """
@@ -138,9 +139,16 @@ class JSONParser:
                         if not (isinstance(value, str) and value in ['hexagonal', 'monolayer']):
                             logging.error(f"{value} is not a valid packing for tissues!")
                             sys.exit(1)
+                         
+                    if var_name == "membrane_beads":
+                        if not isinstance(value, str) and not all(re.match(r'^M[1-5]$', part.strip()) for part in value.split(",")):
+                            logging.error(f"{value} is an incorrect entry for junction_beads!")
+                            sys.exit(1)
                             
-                    ###### May be extended if needed!!!!
-                    ###### Correct later for final JSON file!
+                    if var_name == "junction_beads":
+                        if not isinstance(value, str) and value == "off" and not all(re.match(r'^J[1-5]$', part.strip()) for part in value.split(",")):
+                            logging.error(f"{value} is an incorrect entry for membrane_beads!")
+                            sys.exit(1)
                             
         if args.verbose:
             print(f"\nVERBOSE MODE ENABLED. Parameters read from: {self.json_path}.") 
@@ -174,11 +182,11 @@ class ForcefieldParserGMX:
             cls._instance.atomtypes = {}
             cls._instance.nonbond_params = {}
             cls._instance.bondtypes = {}
+            cls._instance.itp_path = None
         return cls._instance
     
     def __init__(self):
         self.cli_parser = CLIParser()
-        self.itp_path = None
 
     def parse_GMX_ff(self):
         """
@@ -222,7 +230,7 @@ class ForcefieldParserGMX:
 
         # open the force field .itp and extract the different '[ ]' categories
         # it makes little sense to check the formatting here ( I would also not know how to do it systematically?) as the user 
-        # does not need to edit the force field themselves
+        # does not need to edit the force field themselves. But have to be careful of mistakes creeping in the force field!
         with open(self.itp_path, 'r') as itp:
             section = None
             for line in itp:
@@ -239,7 +247,7 @@ class ForcefieldParserGMX:
         if args.verbose:
             atom_names = list(self.atomtypes.keys())
             print(f"\nVERBOSE MODE ENABLED. Succesfully read the force field from {self.itp_path}. ")
-            print("Your system contains the following particle types:")
+            print("Your force field contains the following particle types:")
             print(atom_names)
             
             print("\nAnd the following LJ interaction pairs:")

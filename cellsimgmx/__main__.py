@@ -14,12 +14,13 @@
 import logging
 import datetime
 from cellsimgmx import JSONParser, ForcefieldParserGMX
-from cellsimgmx import CellConstructor
+from cellsimgmx import CellTopology
 
 def main():
     now = datetime.datetime.now()
     
     ### LOGGING DETAILS
+    ## Todo: save .log in output-dir!
     logging.basicConfig(
     filename = "cellsimgmx-{}.log".format(now.strftime("%H-%M-%S")),
     level=logging.INFO, #print >INFO msgs to logfile
@@ -41,11 +42,13 @@ def main():
     json_parser.load_json()
     json_parser.extract_json_values()
     ff_parser.parse_GMX_ff()
-    
-    # build an individual cell
-    cellconstruct = CellConstructor()
-    cellconstruct.pack_particles_on_shape()
-    cellconstruct.build_tmp_gro_from_object()
+   
+    #save a .gro and .itp    
+    celltopology = CellTopology()
+    celltopology.assign_atom_names()
+    celltopology.find_nearest_neighbours()
+    #celltopology.build_gro_file_cell()
+    #celltopology.build_top_from_cell()
     
     logging.info("Succesfully ended programme execution. No errors were found. \n")
     
