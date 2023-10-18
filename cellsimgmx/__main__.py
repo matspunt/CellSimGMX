@@ -15,6 +15,7 @@ import logging
 import datetime
 from cellsimgmx import JSONParser, ForcefieldParserGMX
 from cellsimgmx import CellTopology
+from cellsimgmx import TissueConstructor
 
 def main():
     now = datetime.datetime.now()
@@ -48,6 +49,9 @@ def main():
     celltopology.find_nearest_neighbours()
     celltopology.build_gro_file_cell()
     celltopology.build_top_from_cell()
+    
+    tissue = TissueConstructor()
+    tissue.read_gro_cell()
     
     logging.info("Succesfully ended programme execution. No errors were found. \n")
     

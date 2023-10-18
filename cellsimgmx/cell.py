@@ -178,6 +178,15 @@ class CellTopology:
     
     """
     
+    _instance = None 
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(CellTopology, cls).__new__(cls)
+            cls._instance.groname = None
+            cls._instance.itpname = None
+        return cls._instance
+    
     def __init__(self):
         self.cli_parser = CLIParser()
         self.json_parser = JSONParser()
@@ -186,8 +195,6 @@ class CellTopology:
         self.particles = None
         self.atomnames = {(0,0,0): "C"} #define a dictionary where the keys will be the atom names and data are the particle positions
         self.nnneighbours = {} # dict that stores the indices and atomnames of n-nearest neighbours in the membrane
-        self.gro = None
-        self.itp = None
         
     def assign_atom_names(self):
         args = self.cli_parser.parse_args()
@@ -364,9 +371,9 @@ class CellTopology:
         now = datetime.datetime.now()
         gro_header = "GRO file of CELL with {} particles at {}\n".format(str(len(self.particles)), now.strftime("%H:%M:%S"))
         
-        groname = "CELL-{}.gro".format(now.strftime("%H-%M-%S"))
+        self.groname = "CELL-{}.gro".format(now.strftime("%H-%M-%S"))
 
-        with open(f"{args.output_dir}/{groname}", mode='w') as gro:
+        with open(f"{args.output_dir}/{self.groname}", mode='w') as gro:
             gro.write(gro_header)
             gro.write(str(len(self.particles)) + "\n")
 
@@ -385,10 +392,10 @@ class CellTopology:
             gro.write("{:>10.5f}{:>10.5f}{:>10.5f}\n".format(5.000, 5.000, 5.000))  # Add box (arbitrary size)
         gro.close()
         
-        logging.info(f"Built a .gro file '{args.output_dir}/{groname}' of a single cell. ")
+        logging.info(f"Built a .gro file '{args.output_dir}/{self.groname}' of a single cell. ")
         
         if args.verbose:
-            print(f"\nVERBOSE MODE ENABLED. A coordinate file '{args.output_dir}/{groname}' has been saved. Please inspect it in case problems arise later.")
+            print(f"\nVERBOSE MODE ENABLED. A coordinate file '{args.output_dir}/{self.groname}' has been saved. Please inspect it in case problems arise later.")
 
     def build_top_from_cell(self):
         """
@@ -401,9 +408,9 @@ class CellTopology:
         args = self.cli_parser.parse_args()
         
         now = datetime.datetime.now()
-        itpname = "CELL-{}.itp".format(now.strftime("%H-%M-%S"))
+        self.itpname = "CELL-{}.itp".format(now.strftime("%H-%M-%S"))
         
-        with open(f"{args.output_dir}/{itpname}", "w") as itp:
+        with open(f"{args.output_dir}/{self.itpname}", "w") as itp:
             #Write the topology header
             header = "; Topology file for a single CELL generated at {}\n".format(now.strftime("%H:%M:%S"))
             itp.write(header)
@@ -442,22 +449,29 @@ class CellTopology:
             
             else:
                 itp.write("; membrane surface neighbour bonds\n")
+                
+                #neighbours are constructed per particle, so there will be duplicate bonds as a result. 
+                existing_bonds = set() #Store only unique bonds here
+
                 for index_atomname, neighbours in self.nnneighbours.items():
-                    #extract the atom name and index of each surface particle in the system
-                    atom_index, atom_name= index_atomname.split() #str datatype, so need to split it
-
+                    #extract the index and atom name of each surface particle in the system
+                    atom_index, atomname= index_atomname.split() #str datatype, so need to split it
                     for neighbour in neighbours:
-                        #then extract the name and indices of its neighbours
-                        neighbour_atom_index, neighbour_atom_name = neighbour #do not need to split a tuple!
+                        neighbour_atom_index, neighbour_atom_name = neighbour
+                        # Sort the indices to avoid duplicates (basically, '2 3' and '3 2' are considered the same)
+                        bond_indices = tuple(sorted([int(atom_index), int(neighbour_atom_index)]))
+                        if bond_indices not in existing_bonds:
+                            existing_bonds.add(bond_indices)
+                            #look for the bonded type based on either order of the atomnames
+                            bond_type = self.ff_parser.bondtypes.get((atomname, neighbour_atom_name)) or self.ff_parser.bondtypes.get((neighbour_atom_name, atomname))
+                            #and extract the bonded information for that bonded pair
+                            if bond_type:
+                                itp.write(" {:<3s} {:<3s} {:<3s}   {:<3s}   {:<3s} \n".format(str(bond_indices[0]), str(bond_indices[1]), str(bond_type['func']), str(bond_type['r0']), str(bond_type['fk'])))
+                            else:
+                                logging.warning(f"Bondtype not found in the force field for atom index {atom_index} and {neighbour_atom_index}")
 
-                        for bond, entry in self.ff_parser.bondtypes.items():
-                            #find the right bonded type, make sure center bead entries are explicitly ignored (order does not matter here)
-                            if atom_name in bond and neighbour_atom_name in bond and "C" not in bond:
-                                itp.write(" {:<3s} {:<3s} {:<3s}   {:<3s}   {:<3s} \n".format(str(atom_index), str(neighbour_atom_index), str(entry['func']), str(entry['r0']), str(entry['fk'])))
-                        
         itp.close()
-        logging.info(f"Built a topology file '{args.output_dir}/{itpname}' of a single cell. ")
+        logging.info(f"Built a topology file '{args.output_dir}/{self.itpname}' of a single cell. ")
         
         if args.verbose:
-            print(f"\nVERBOSE MODE ENABLED. A topology file '{args.output_dir}/{itpname}' has been built")
-        
+            print(f"\nVERBOSE MODE ENABLED. A topology file '{args.output_dir}/{self.itpname}' has been built")

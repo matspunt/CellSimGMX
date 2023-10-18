@@ -136,18 +136,18 @@ class JSONParser:
                             sys.exit(1)
 
                     if var_name == "tissue_packing":
-                        if not (isinstance(value, str) and value in ['hexagonal', 'monolayer']):
+                        if not (isinstance(value, str) and value in ['grid', 'hexagonal', 'monolayer']):
                             logging.error(f"{value} is not a valid packing for tissues!")
                             sys.exit(1)
                          
                     if var_name == "membrane_beads":
                         if not isinstance(value, str) and not all(re.match(r'^M[1-5]$', part.strip()) for part in value.split(",")):
-                            logging.error(f"{value} is an incorrect entry for junction_beads!")
+                            logging.error(f"{value} is an incorrect option for junction_beads!")
                             sys.exit(1)
                             
                     if var_name == "junction_beads":
                         if not isinstance(value, str) and value == "off" and not all(re.match(r'^J[1-5]$', part.strip()) for part in value.split(",")):
-                            logging.error(f"{value} is an incorrect entry for membrane_beads!")
+                            logging.error(f"{value} is an incorrect option for membrane_beads!")
                             sys.exit(1)
                             
         if args.verbose:

@@ -39,7 +39,7 @@
             "value": 64
         },
         "tissue_packing": {
-            "description": "The packing configuration of the tissue. Allows 'hexagonal', 'monolayer",
+            "description": "The packing configuration of the tissue. Allows 'grid', 'hexagonal', 'monolayer', '",
             "value": "hexagonal"
         }
     },
@@ -55,8 +55,8 @@
     },
     "Simulation": {
         "simulation_type": {
-            "description": "Sets the type of simulation, either 'cell' or 'tissue'. In case of 'cell', all tissue options are ignored in the input.JSON. This option is useful to run analysis on single cells",
-            "value": "cell"
+            "description": "Sets the type of simulation, either 'cell' or 'tissue'. In case of 'cell', all tissue options are ignored in the input.JSON",
+            "value": "tissue"
         },
         "timestep": {
             "description": "The timestep used in GMX (defined as picoseconds)",

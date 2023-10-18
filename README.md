@@ -31,11 +31,11 @@ used for the simulation (amount of junction particles, distribution of them etc)
 ## Project to do's applied to the code
 
 Essential features (**HIGH PRIORITY**)
-- [x] Ensure ```settings_parser.py``` works with the new .JSON categories and settings. **DONE**, the JSON parsing simply reads all variables and saves them as varnames. This way it can be extended easily without having to rewrite the parsing. 
-- [x] Remove PACKMOL functionality ```cell.py```. This should have the functionality of packing arbitrary number of beads on certain shape surfaces (square, cube, ellipsoid, sphere) etc. **DONE**
-- [ ] In addition, it distributes particle types in a systematic way and builds the GROMACS topology from the forcefield. **ALMOST DONE** --> slight rewrite from old code. 
--  Within this logic, also include generation of the surface bonds. 
-- [ ] Rewrite ```tissue.py``` to directly use a Cell object (instead of reading in the coordinate file from disk), and use the Cell object to create Tissues based on ```input.json```. **ALMOST DONE** --> slight rewrite from old code. 
+- [x] Ensure ```settings_parser.py``` works with the new .JSON categories and settings. Tthe JSON parsing simply reads all variables and saves them as varnames. This way it can be extended easily without having to rewrite the parsing. 
+- [x] Remove PACKMOL functionality ```cell.py```. This should have the functionality of packing arbitrary number of beads on certain shape surfaces (square, cube, ellipsoid, sphere) etc.
+- [x] In addition, it distributes particle types in a systematic way and builds the GROMACS topology from the forcefield.
+- [x] Within this logic, also include generation of the surface bonds (can be configured for arbitrary number of n-neighbours). 
+- [ ] Create various Tissue packings (```tissue.py```) based on ```input.json``` settings.
 - [ ] Change how the matrix is defined (as individual particles) and create logic that works for matrix setting turned on or off. 
 - [ ] Write ```simulation.py``` or ```gromacs.py``` which takes all input files and actually runs and sets up the simulations with error handling. 
 - [ ] Come up with files and simulation directory layout. How is everything run and named? How should the files be organized for the user?
