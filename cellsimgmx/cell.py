@@ -366,6 +366,9 @@ class CellTopology:
             A GROMACS compatible coordinate (.gro) file on disk formatted as CELL-{timeprint}.gro
 
         """
+        self.assign_atom_names()
+        self.find_nearest_neighbours()
+        
         args = self.cli_parser.parse_args()
         
         now = datetime.datetime.now()

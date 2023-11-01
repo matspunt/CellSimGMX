@@ -28,6 +28,12 @@ basic analysis is performed on the simulation data.
 The code comes with a force field (```forcefield.itp```) for all the VdW particles in the system. An input file ```input.json``` is used to determine the specifications of the system
 used for the simulation (amount of junction particles, distribution of them etc). The parameter descriptions should speak for themselves. 
 
+## Notes for Mats
+
+- Maybe remove .gro writer for cell from Cell.py and have a uniform .gro writer in System.py that handles box definition and centering?, 
+would have less I/O and less code needed. 
+- Note: stress test tissue packing logic for large number of cells!!
+
 ## Project to do's applied to the code
 
 Essential features (**HIGH PRIORITY**)

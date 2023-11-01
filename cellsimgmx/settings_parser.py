@@ -136,7 +136,7 @@ class JSONParser:
                             sys.exit(1)
 
                     if var_name == "tissue_packing":
-                        if not (isinstance(value, str) and value in ['grid', 'hexagonal', 'monolayer']):
+                        if not (isinstance(value, str) and value in ['grid', 'hexagonal', 'monolayer', 'disordered']):
                             logging.error(f"{value} is not a valid packing for tissues!")
                             sys.exit(1)
                          

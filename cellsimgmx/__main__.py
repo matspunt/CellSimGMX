@@ -45,13 +45,10 @@ def main():
     ff_parser.parse_GMX_ff()
      
     celltopology = CellTopology()
-    celltopology.assign_atom_names()
-    celltopology.find_nearest_neighbours()
     celltopology.build_gro_file_cell()
     celltopology.build_top_from_cell()
     
-    tissue = TissueConstructor()
-    tissue.read_gro_cell()
+    tissue = TissueConstructor() #__init__ launches class in this instance
     
     logging.info("Succesfully ended programme execution. No errors were found. \n")
     

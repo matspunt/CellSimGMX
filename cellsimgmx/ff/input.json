@@ -39,8 +39,8 @@
             "value": 64
         },
         "tissue_packing": {
-            "description": "The packing configuration of the tissue. Allows 'grid', 'hexagonal', 'monolayer', '",
-            "value": "hexagonal"
+            "description": "The packing configuration of the tissue. Allows 'grid', 'hexagonal', 'monolayer', 'disordered'",
+            "value": "monolayer"
         }
     },
     "Matrix": {
