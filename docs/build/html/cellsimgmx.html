@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cellsimgmx package &mdash; CellSimGMX 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Introduction" href="test.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            CellSimGMX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="test.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">cellsimgmx package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cellsimgmx-analysis-module">cellsimgmx.analysis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cellsimgmx.cell">cellsimgmx.cell module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.cell.CellConstructor"><code class="docutils literal notranslate"><span class="pre">CellConstructor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.cell.CellConstructor.pack_particles_on_shape"><code class="docutils literal notranslate"><span class="pre">CellConstructor.pack_particles_on_shape()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.cell.CellTopology"><code class="docutils literal notranslate"><span class="pre">CellTopology</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.cell.CellTopology.assign_atom_names"><code class="docutils literal notranslate"><span class="pre">CellTopology.assign_atom_names()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.cell.CellTopology.build_gro_file_cell"><code class="docutils literal notranslate"><span class="pre">CellTopology.build_gro_file_cell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.cell.CellTopology.build_top_from_cell"><code class="docutils literal notranslate"><span class="pre">CellTopology.build_top_from_cell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.cell.CellTopology.find_nearest_neighbours"><code class="docutils literal notranslate"><span class="pre">CellTopology.find_nearest_neighbours()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cellsimgmx.settings_parser">cellsimgmx.settings_parser module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.settings_parser.CLIParser"><code class="docutils literal notranslate"><span class="pre">CLIParser</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.settings_parser.CLIParser.parse_args"><code class="docutils literal notranslate"><span class="pre">CLIParser.parse_args()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.settings_parser.ForcefieldParserGMX"><code class="docutils literal notranslate"><span class="pre">ForcefieldParserGMX</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.settings_parser.ForcefieldParserGMX.parse_GMX_ff"><code class="docutils literal notranslate"><span class="pre">ForcefieldParserGMX.parse_GMX_ff()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.settings_parser.ForcefieldParserGMX.parse_atomtype_GMX_helper"><code class="docutils literal notranslate"><span class="pre">ForcefieldParserGMX.parse_atomtype_GMX_helper()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.settings_parser.ForcefieldParserGMX.parse_bondtype_GMX_helper"><code class="docutils literal notranslate"><span class="pre">ForcefieldParserGMX.parse_bondtype_GMX_helper()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.settings_parser.ForcefieldParserGMX.parse_nonbond_params_GMX_helper"><code class="docutils literal notranslate"><span class="pre">ForcefieldParserGMX.parse_nonbond_params_GMX_helper()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.settings_parser.JSONParser"><code class="docutils literal notranslate"><span class="pre">JSONParser</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.settings_parser.JSONParser.extract_json_values"><code class="docutils literal notranslate"><span class="pre">JSONParser.extract_json_values()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.settings_parser.JSONParser.load_json"><code class="docutils literal notranslate"><span class="pre">JSONParser.load_json()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cellsimgmx.simulation">cellsimgmx.simulation module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.simulation.RunSimulation"><code class="docutils literal notranslate"><span class="pre">RunSimulation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.simulation.SimulationPreparation"><code class="docutils literal notranslate"><span class="pre">SimulationPreparation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cellsimgmx.tissue">cellsimgmx.tissue module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.tissue.MatrixConstructor"><code class="docutils literal notranslate"><span class="pre">MatrixConstructor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.tissue.SystemConstructor"><code class="docutils literal notranslate"><span class="pre">SystemConstructor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cellsimgmx.tissue.TissueConstructor"><code class="docutils literal notranslate"><span class="pre">TissueConstructor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.tissue.TissueConstructor.check_for_tissue"><code class="docutils literal notranslate"><span class="pre">TissueConstructor.check_for_tissue()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.tissue.TissueConstructor.fit_box_around_coord"><code class="docutils literal notranslate"><span class="pre">TissueConstructor.fit_box_around_coord()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.tissue.TissueConstructor.read_gro_cell"><code class="docutils literal notranslate"><span class="pre">TissueConstructor.read_gro_cell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.tissue.TissueConstructor.replicate_cell_disordered"><code class="docutils literal notranslate"><span class="pre">TissueConstructor.replicate_cell_disordered()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.tissue.TissueConstructor.replicate_cell_hexagonal"><code class="docutils literal notranslate"><span class="pre">TissueConstructor.replicate_cell_hexagonal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.tissue.TissueConstructor.replicate_cell_monolayer"><code class="docutils literal notranslate"><span class="pre">TissueConstructor.replicate_cell_monolayer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.tissue.TissueConstructor.replicate_cell_on_grid"><code class="docutils literal notranslate"><span class="pre">TissueConstructor.replicate_cell_on_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cellsimgmx.tissue.TissueConstructor.write_gro_tissue"><code class="docutils literal notranslate"><span class="pre">TissueConstructor.write_gro_tissue()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cellsimgmx">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CellSimGMX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">cellsimgmx package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cellsimgmx.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="cellsimgmx-package">
+<h1>cellsimgmx package<a class="headerlink" href="#cellsimgmx-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="cellsimgmx-analysis-module">
+<h2>cellsimgmx.analysis module<a class="headerlink" href="#cellsimgmx-analysis-module" title="Link to this heading"></a></h2>
+</section>
+<section id="module-cellsimgmx.cell">
+<span id="cellsimgmx-cell-module"></span><h2>cellsimgmx.cell module<a class="headerlink" href="#module-cellsimgmx.cell" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.cell.CellConstructor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.cell.</span></span><span class="sig-name descname"><span class="pre">CellConstructor</span></span><a class="headerlink" href="#cellsimgmx.cell.CellConstructor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class builds coordinates of a single Cell, the basic building block of a System based on the input.JSON. We use the number of particles
+and cell radius to build an initial .gro file into the desired shape, and then in CellTopology we assign the atom names, bonds etc. to make the topology.</p>
+<p>Methods:
+pack_particles_on_shape():</p>
+<blockquote>
+<div><p>Pack particles onto a specified shape within a cell of given radius.</p>
+</div></blockquote>
+<p>Returns:
+self.particles():</p>
+<blockquote>
+<div><p>A list of the particle positions where (0,0,0) is always the center particle.</p>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.cell.CellConstructor.pack_particles_on_shape">
+<span class="sig-name descname"><span class="pre">pack_particles_on_shape</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.cell.CellConstructor.pack_particles_on_shape" title="Link to this definition"></a></dt>
+<dd><p>Takes .JSON input and uses the information there (nr_of_particles, cell_radius, and packing_shape) to create coordinates of a cell. 
+The packing for ellipsoids is currently bad. Note that there is no direct error handling here, since the user is not expected to change
+the number of particles or radius themselves –&gt; these will only be changed in the development phase. Since the parameters can be
+printed in -verbose mode that should make finding problems clear enough. Returns the particle positions.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.cell.CellTopology">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.cell.</span></span><span class="sig-name descname"><span class="pre">CellTopology</span></span><a class="headerlink" href="#cellsimgmx.cell.CellTopology" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Uses particle positions from CellConstructor and assigns them particle (atom) names in different logic. Then saves a .gro and .itp based on the force field.
+These form the basic building blocks of a tissue</p>
+<p>Methods:
+assign_atom_names():</p>
+<blockquote>
+<div><p>Takes list of particle positions and assigns them atom names.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>find_nearest_neighbours():</dt><dd><p>Looks for nearest neighbours based on the input.json and stores that information as the self.atomname indices to later parse the bonds accordingly.</p>
+</dd>
+<dt>build_gro_file_cell():</dt><dd><p>Saves a .gro file with the right atom names. Can be simulated individually if needed. Otherwise, can be used to build the tissue.</p>
+</dd>
+<dt>build_top_from_cell():</dt><dd><p>Creates an .itp file for a single cell based on the atomname and force field information, recognizes center bead. If nearest neighbours are set, also parses
+these bonds in the .itp</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.cell.CellTopology.assign_atom_names">
+<span class="sig-name descname"><span class="pre">assign_atom_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.cell.CellTopology.assign_atom_names" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.cell.CellTopology.build_gro_file_cell">
+<span class="sig-name descname"><span class="pre">build_gro_file_cell</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.cell.CellTopology.build_gro_file_cell" title="Link to this definition"></a></dt>
+<dd><p>Uses output from assign_atom_names() to save the atomnames and coordinates in a .gro file</p>
+<dl class="simple">
+<dt>Output:</dt><dd><p>A GROMACS compatible coordinate (.gro) file on disk formatted as CELL-{timeprint}.gro</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.cell.CellTopology.build_top_from_cell">
+<span class="sig-name descname"><span class="pre">build_top_from_cell</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.cell.CellTopology.build_top_from_cell" title="Link to this definition"></a></dt>
+<dd><p>Uses output from assign_atom_names() and find_nearest_neigbors() to build a topology based on the specified force field. 
+Basically links self.atomnames and self.nnneighbours dict (the beads in the cell) to ForceFieldParserGMX() class information.</p>
+<dl class="simple">
+<dt>Outputs:</dt><dd><p>CELL-{timeprint}.itp file on disk in output dir.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.cell.CellTopology.find_nearest_neighbours">
+<span class="sig-name descname"><span class="pre">find_nearest_neighbours</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.cell.CellTopology.find_nearest_neighbours" title="Link to this definition"></a></dt>
+<dd><p>Uses output from assign_atom_names() to determine the n-nearest neighbours on the surface membrane, if enabled by the user in ‘input.JSON’.</p>
+<dl>
+<dt>Output:</dt><dd><p>A dict (self.nnneighbours) with as keys the indices of the connected neighbours and as value their atomnames.</p>
+<dl class="simple">
+<dt>If –verbose is enabled:</dt><dd><p>A plot ‘CELL_surface_bonds-{time}.png’ of the n-neighbour scheme based on the user input to validate.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-cellsimgmx.settings_parser">
+<span id="cellsimgmx-settings-parser-module"></span><h2>cellsimgmx.settings_parser module<a class="headerlink" href="#module-cellsimgmx.settings_parser" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.CLIParser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.settings_parser.</span></span><span class="sig-name descname"><span class="pre">CLIParser</span></span><a class="headerlink" href="#cellsimgmx.settings_parser.CLIParser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class accepts command line arguments of the programme and stores them. Can be passed on to other classes to access CLI strings given by user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.CLIParser.parse_args">
+<span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.settings_parser.CLIParser.parse_args" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.ForcefieldParserGMX">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.settings_parser.</span></span><span class="sig-name descname"><span class="pre">ForcefieldParserGMX</span></span><a class="headerlink" href="#cellsimgmx.settings_parser.ForcefieldParserGMX" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class handles parsing of the predefined force field in GROMACS format and stores it in dicts</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>atomtypes (dict)
+nonbond_params (dict)
+bondtypes (dict)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.ForcefieldParserGMX.parse_GMX_ff">
+<span class="sig-name descname"><span class="pre">parse_GMX_ff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.settings_parser.ForcefieldParserGMX.parse_GMX_ff" title="Link to this definition"></a></dt>
+<dd><p>Looks for a GMX compatible .itp file in the user-specific directory. Then uses helper functions to parse the 
+different .itp entries into dictionaries.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.ForcefieldParserGMX.parse_atomtype_GMX_helper">
+<span class="sig-name descname"><span class="pre">parse_atomtype_GMX_helper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.settings_parser.ForcefieldParserGMX.parse_atomtype_GMX_helper" title="Link to this definition"></a></dt>
+<dd><p>Parses atom types from the .itp so .gro files can be built from them.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.ForcefieldParserGMX.parse_bondtype_GMX_helper">
+<span class="sig-name descname"><span class="pre">parse_bondtype_GMX_helper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.settings_parser.ForcefieldParserGMX.parse_bondtype_GMX_helper" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.ForcefieldParserGMX.parse_nonbond_params_GMX_helper">
+<span class="sig-name descname"><span class="pre">parse_nonbond_params_GMX_helper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.settings_parser.ForcefieldParserGMX.parse_nonbond_params_GMX_helper" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.JSONParser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.settings_parser.</span></span><span class="sig-name descname"><span class="pre">JSONParser</span></span><a class="headerlink" href="#cellsimgmx.settings_parser.JSONParser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class handles parsing of the input.JSON file. An instance of this class can be passed to other classes to access the 
+simulation settings. Currently supports four classes of settings “Cell”, “Tissue”, “Matrix” and “Simulation”, as seen in the example input.JSON.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>cli_parser (CLIParser): An instance of the CLIParser class
+json_path (str): The path to the JSON input file.
+data (dict): The loaded JSON data.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.JSONParser.extract_json_values">
+<span class="sig-name descname"><span class="pre">extract_json_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.settings_parser.JSONParser.extract_json_values" title="Link to this definition"></a></dt>
+<dd><p>Extracts values from input.JSON and stores them in variables. Variable names are by construction IDENTICAL to JSON variable names. This should make working with them straightforward. 
+Does a few basic sanity checks on input (can be expanded later if needed).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.settings_parser.JSONParser.load_json">
+<span class="sig-name descname"><span class="pre">load_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.settings_parser.JSONParser.load_json" title="Link to this definition"></a></dt>
+<dd><p>Loads the input.json as data, verifies input complies with JSON standard.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-cellsimgmx.simulation">
+<span id="cellsimgmx-simulation-module"></span><h2>cellsimgmx.simulation module<a class="headerlink" href="#module-cellsimgmx.simulation" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.simulation.RunSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.simulation.</span></span><span class="sig-name descname"><span class="pre">RunSimulation</span></span><a class="headerlink" href="#cellsimgmx.simulation.RunSimulation" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Executes the .tpr, tracking the simulation progress. Important progress information is printed to the terminal.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.simulation.SimulationPreparation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.simulation.</span></span><span class="sig-name descname"><span class="pre">SimulationPreparation</span></span><a class="headerlink" href="#cellsimgmx.simulation.SimulationPreparation" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Ensures and checks all necessary files are there to run GMX simulations. Creates .mdp / runfiles based
+on input.JSON for the minimization, equilibration and production part of the simulation.</p>
+<dl class="simple">
+<dt>create_mdp_files:</dt><dd><p>Creates mdp files.</p>
+</dd>
+<dt>gather_simulation_files:</dt><dd><p>Checks whether all necessary files are there, whether they are readable etc.</p>
+</dd>
+<dt>construct_tpr:</dt><dd><p>???? –&gt; does this belong here or in next class?</p>
+</dd>
+<dt>Returns dict:</dt><dd><p>Containing file names/paths of all files required to start the simulation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-cellsimgmx.tissue">
+<span id="cellsimgmx-tissue-module"></span><h2>cellsimgmx.tissue module<a class="headerlink" href="#module-cellsimgmx.tissue" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.MatrixConstructor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.tissue.</span></span><span class="sig-name descname"><span class="pre">MatrixConstructor</span></span><a class="headerlink" href="#cellsimgmx.tissue.MatrixConstructor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Depending on the input.JSON options, this class either uses the individual CELL-{timestamp}.gro object
+or tissue-{packing} object to create a matrix object.</p>
+<section id="methods">
+<h3>Methods:<a class="headerlink" href="#methods" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>process_matrix_settings():</dt><dd><p>Checks the input for whether matrix is enabled, and checks the other matrix options.</p>
+</dd>
+<dt>build_matrix_cell():</dt><dd><p>Builds a matrix object for a single cell (if so requested).</p>
+</dd>
+<dt>build_matrix_tissue():</dt><dd><p>Builds a matrix object for a tissue (if so requested).</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.SystemConstructor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.tissue.</span></span><span class="sig-name descname"><span class="pre">SystemConstructor</span></span><a class="headerlink" href="#cellsimgmx.tissue.SystemConstructor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Uses the tissue or matrix object from TissueConstructor / MatrixConstructor classes to make the final ‘system-{timestamp}.gro’
+which will be input for the ‘simulation’ module. Then, based on the system specifications, creates a ‘system-{timestamp}.top’
+file which links the necessary .itp files and prepares the input required for a GMX simulation.</p>
+<dl class="simple">
+<dt>fit_box_around_system():</dt><dd><p>Fits a simulation box around the final system</p>
+</dd>
+<dt>build_gro_file_system():</dt><dd><p>Constructs the .gro file of the system</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.TissueConstructor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cellsimgmx.tissue.</span></span><span class="sig-name descname"><span class="pre">TissueConstructor</span></span><a class="headerlink" href="#cellsimgmx.tissue.TissueConstructor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class uses the individual CELL-{timestamp}.gro object directly to build a tissue object in various
+configurations, which can later be used to add a matrix to if needed.</p>
+<section id="id1">
+<h3>Methods:<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<dl>
+<dt>check_for_tissue():</dt><dd><p>Checks whether ‘tissues’ are enabled in the input, otherwise passes class. Also figures out packing.</p>
+</dd>
+<dt>read_gro_cell():</dt><dd><p>Reads .gro file of individual cell. Stores contents in ‘self.’ Reason for doing it like this instead of 
+accessing the data directly from CellConstructor is that this will make it easier to create non-uniform
+tissues later (by running CellConstructor multiple times) which then only requires minor edits to this class.</p>
+</dd>
+<dt>replicate_cell_on_grid():</dt><dd><p>Creates basic standard packing by replicating on grid, stores information in ‘self.tissue_coords’.</p>
+</dd>
+<dt>replicate_cell_monolayer():</dt><dd><p>Fits the requested number of cells on a monolayer in x- and y-direction (z = 1), stores information in ‘self.tissue_coords’.</p>
+</dd>
+<dt>replicate_cell_hexagonal():</dt><dd><p>Creates a hexagonal geometry in the y-direction. The amount of shearing can be configured if needed. 
+Stores information in ‘self.tissue_coords’</p>
+</dd>
+<dt>replicate_cell_disordered():</dt><dd><p>Puts the requested number of cells in disordered fashion (like ‘gmx insert-molecules’) together based 
+on a contact distance logic. Stores information in ‘self.tissue_coords’.</p>
+<blockquote>
+<div><p>Note: might lead to unnecessarily large box volumes for NVT.</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.TissueConstructor.check_for_tissue">
+<span class="sig-name descname"><span class="pre">check_for_tissue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.tissue.TissueConstructor.check_for_tissue" title="Link to this definition"></a></dt>
+<dd><p>In this function we define what functions of this class need to be executed. If no tissue simulation was requested, do nothing.
+Otherwise pack the tissue in the requested manner.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.TissueConstructor.fit_box_around_coord">
+<span class="sig-name descname"><span class="pre">fit_box_around_coord</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.tissue.TissueConstructor.fit_box_around_coord" title="Link to this definition"></a></dt>
+<dd><p>Fits closest fitting box around the coordinates. Note: will be moved to System class later!</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.TissueConstructor.read_gro_cell">
+<span class="sig-name descname"><span class="pre">read_gro_cell</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.tissue.TissueConstructor.read_gro_cell" title="Link to this definition"></a></dt>
+<dd><p>Reads .gro file of an individual cell, stores .gro file information in a dict ‘self.cell_gro_content’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.TissueConstructor.replicate_cell_disordered">
+<span class="sig-name descname"><span class="pre">replicate_cell_disordered</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.tissue.TissueConstructor.replicate_cell_disordered" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.TissueConstructor.replicate_cell_hexagonal">
+<span class="sig-name descname"><span class="pre">replicate_cell_hexagonal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.tissue.TissueConstructor.replicate_cell_hexagonal" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.TissueConstructor.replicate_cell_monolayer">
+<span class="sig-name descname"><span class="pre">replicate_cell_monolayer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.tissue.TissueConstructor.replicate_cell_monolayer" title="Link to this definition"></a></dt>
+<dd><p>Generates hexagonal packing</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.TissueConstructor.replicate_cell_on_grid">
+<span class="sig-name descname"><span class="pre">replicate_cell_on_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.tissue.TissueConstructor.replicate_cell_on_grid" title="Link to this definition"></a></dt>
+<dd><p>Replicates cells uniformly on the smallest possible 3D (cubic) grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cellsimgmx.tissue.TissueConstructor.write_gro_tissue">
+<span class="sig-name descname"><span class="pre">write_gro_tissue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellsimgmx.tissue.TissueConstructor.write_gro_tissue" title="Link to this definition"></a></dt>
+<dd><p>Note: this function will be moved to System class later, just for testing tissue packing functionality</p>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+<section id="module-cellsimgmx">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-cellsimgmx" title="Link to this heading"></a></h2>
+<p>CellSimGMX: a 3D discrete element framework simulator for epithelial tissues using GROMACS</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="test.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Mats Punt.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

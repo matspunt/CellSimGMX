@@ -1,6 +1,7 @@
 # Exclude build information from pip
 cellsimgmx.egg-info/
-build/
+bdist.linux-x86_64
+lib
 __pycache__
 
 # Exclude GMX & programme files
