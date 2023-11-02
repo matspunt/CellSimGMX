@@ -1,5 +1,9 @@
 # CellSimGMX
 
+<p align="left">
+  <img src="docs/logo.png" width="550" title="CellSimGMX logo">
+</p>
+
 ## Explanation of repository
 
 This is a repo for the CellSimGMX project. This branch does not use PACKMOL anymore to construct the cells but builds arbitrary cells without any external tools. 
