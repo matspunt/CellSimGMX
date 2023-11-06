@@ -26,13 +26,17 @@ class CLIParser:
     def __init__(self):
         self.parser = argparse.ArgumentParser(description="CellSimGMX: A 3D discrete element framework simulator for epithelial tissues using GROMACS")
         
-        #specifying directories for programme
-        self.parser.add_argument("--ff-dir", "-ff", help="Absolute path to the directory where the forcefield is stored (accepts arbitrary .itp file names)")
-        self.parser.add_argument("--input-dir", "-in", help="Absolute path to the directory where the simulation input is stored (accepts arbitrary .json file name)")
-        self.parser.add_argument("--output-dir", "-out", help="Absolute path where files should be generated and simulation should be run")
+        # specifying directories for programme
+        # the reason for using directories instead of direct files is to support loading in multiple settings and force field files in case of parallel simulations
+        self.parser.add_argument("--ff-dir", "-ff", help="Path to the directory where the forcefield is stored (accepts arbitrary .itp file names)")
+        self.parser.add_argument("--input-dir", "-in", help="Path to the directory where the simulation input is stored (accepts arbitrary .json file name)")
+        self.parser.add_argument("--output-dir", "-out", help="Path where files should be generated and simulation should be run")
+        
+        #Simulation related
+        self.parser.add_argument("--no-sim", "-nosim", help="Does not run a simulation, but does generate all input files like a dryrun.")
         
         #Miscellaneous
-        self.parser.add_argument("--verbose", "-v", action="store_true", help="Optional argument. When enabled, prints detailed logging. Useful for debugging problems. ")
+        self.parser.add_argument("--verbose", "-v", action="store_true", help="Optional argument. When enabled, prints detailed logging. Useful for debugging output. ")
 
     def parse_args(self):
         return self.parser.parse_args()
@@ -65,7 +69,10 @@ class JSONParser:
         
     def load_json(self):
         """
-        Loads the input.json as data, verifies input complies with JSON standard. 
+        Loads the input.json as data, does a bunch of checks the input is OK, verifies input complies with JSON standard. 
+       
+        Params:
+            args.input_dir (str) - Location of the directory where the JSON file should be loaded from. 
         """
         args = self.cli_parser.parse_args()
         if args.input_dir:
@@ -107,8 +114,11 @@ class JSONParser:
 
     def extract_json_values(self):
         """
-        Extracts values from input.JSON and stores them in variables. Variable names are by construction IDENTICAL to JSON variable names. This should make working with them straightforward. 
-        Does a few basic sanity checks on input (can be expanded later if needed). 
+        Extracts values from input.JSON and stores them in variables. Variable names are by construction IDENTICAL to JSON variable names. 
+        e.g. "simulation_type = 'cell'" in both JSON and CellSimGMX. 
+        
+        Returns:
+            json_values (dict) - A dict containing all variables and their values required as CellSimGMX input
         """
         
         args = self.cli_parser.parse_args()
@@ -118,7 +128,7 @@ class JSONParser:
             sys.exit(1)
 
         json_values = {}
-        for category, category_items in self.data.items():
+        for _, category_items in self.data.items():
             for key, value_data in category_items.items():
                 value = value_data.get("value")
                 if value is not None:
@@ -148,6 +158,11 @@ class JSONParser:
                     if var_name == "junction_beads":
                         if not isinstance(value, str) and value == "off" and not all(re.match(r'^J[1-5]$', part.strip()) for part in value.split(",")):
                             logging.error(f"{value} is an incorrect option for membrane_beads!")
+                            sys.exit(1)
+                    
+                    if var_name == "ensemble":
+                        if not (isinstance(value, str) and value in ['NVE', 'NVT', 'NpT']):
+                            logging.error(f"{value} is not a valid simulation ensemble!")
                             sys.exit(1)
                             
         if args.verbose:
@@ -190,8 +205,13 @@ class ForcefieldParserGMX:
 
     def parse_GMX_ff(self):
         """
-            Looks for a GMX compatible .itp file in the user-specific directory. Then uses helper functions to parse the 
-            different .itp entries into dictionaries. 
+        Looks for a GMX compatible .itp file in the user-specific directory. Then uses helper functions to parse the 
+        different .itp entries into dictionaries. 
+            
+        Raises:
+            - SystemExit: Raised with an error message and exit status 1 if there are issues with the force field directory
+                or if multiple .itp files are found.
+            - FileNotFoundError: Raised if no .itp files could be found in the specified force field directory.
         """
         
         args = self.cli_parser.parse_args()
@@ -247,7 +267,7 @@ class ForcefieldParserGMX:
         if args.verbose:
             atom_names = list(self.atomtypes.keys())
             print(f"\nVERBOSE MODE ENABLED. Succesfully read the force field from {self.itp_path}. ")
-            print("Your force field contains the following particle types:")
+            print("The force field contains the following particle types:")
             print(atom_names)
             
             print("\nAnd the following LJ interaction pairs:")
@@ -272,7 +292,10 @@ class ForcefieldParserGMX:
 
     def parse_atomtype_GMX_helper(self, line):
         """
-            Parses atom types from the .itp so .gro files can be built from them. 
+        Parses atom types from the .itp so .gro files can be built from them. 
+            
+        Returns:
+            self.atomtypes (dict) - A dict with key = atomtypes and values callable as .itp variables (e.g. 'mass')
         """
         if not line.startswith(';'):
             columns = line.split()
@@ -286,6 +309,15 @@ class ForcefieldParserGMX:
                 self.atomtypes[atomtype] = {'mass': mass, 'charge': charge, 'ptype': ptype, 'sigma': sigma, 'epsilon': epsilon}
 
     def parse_nonbond_params_GMX_helper(self, line):
+        """
+        Parses nonbonded (Lennard-Jones) types in the .itp.
+
+        Returns:
+            self.nonbond_params (dict) - A dict with key = [i,j] where i and j are two interacting atom types.
+                
+        Note:
+            This function and nonbonded information is currently not used for anything. Maybe for M-C routine later?
+        """
         #skip lines with comments
         if not line.startswith(';'):
             columns = line.split()
@@ -298,6 +330,15 @@ class ForcefieldParserGMX:
                 self.nonbond_params[(i, j)] = {'func': func, 'sigma': sigma, 'epsilon': epsilon}
 
     def parse_bondtype_GMX_helper(self, line):
+        """
+        Parses bonded types in the force field .itp. 
+
+        Returns:
+            self.bonded_types (dict) - A dict with key = [i,j] where i and j are two bonded atom types (e.g. M1 & M2.)
+                
+        Note:
+            This function and nonbonded information is currently not used for anything. Maybe for M-C routine later?
+        """
         #skip lines with comments
         if not line.startswith(';'):
             columns = line.split()

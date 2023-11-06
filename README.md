@@ -34,9 +34,16 @@ used for the simulation (amount of junction particles, distribution of them etc)
 
 ## Notes for Mats
 
-- Maybe remove .gro writer for cell from Cell.py and have a uniform .gro writer in System.py that handles box definition and centering?, 
-would have less I/O and less code needed. 
+- Todo: Matrix for tissues!!!! Atom types and layers
 - Note: stress test tissue packing logic for large number of cells!!
+- Update logging information in the code, make verbose flag work in each function!!!
+- Bug in disordered packing logic --> FIX!
+- Format output directories & files!!!!!
+- Include documentation. 
+- Apply weak position restraint to matrix particles. 
+- Explain equilibration routine in code documentation!!!!
+- Explain naming conventions documentation!!!!
+- Optimize matrix distance based on simulation logic.
 
 ## Project to do's applied to the code
 
@@ -45,8 +52,8 @@ Essential features (**HIGH PRIORITY**)
 - [x] Remove PACKMOL functionality ```cell.py```. This should have the functionality of packing arbitrary number of beads on certain shape surfaces (square, cube, ellipsoid, sphere) etc.
 - [x] In addition, it distributes particle types in a systematic way and builds the GROMACS topology from the forcefield.
 - [x] Within this logic, also include generation of the surface bonds (can be configured for arbitrary number of n-neighbours). 
-- [ ] Create various Tissue packings (```tissue.py```) based on ```input.json``` settings.
-- [ ] Change how the matrix is defined (as individual particles) and create logic that works for matrix setting turned on or off. 
+- [x] Create various Tissue packings (```tissue.py```) based on ```input.json``` settings.
+- [x] Change how the matrix is defined (as individual particles) and create logic that works for matrix setting turned on or off. 
 - [ ] Write ```simulation.py``` or ```gromacs.py``` which takes all input files and actually runs and sets up the simulations with error handling. 
 - [ ] Come up with files and simulation directory layout. How is everything run and named? How should the files be organized for the user?
 

@@ -30,12 +30,12 @@ class CellConstructor:
     and cell radius to build an initial .gro file into the desired shape, and then in CellTopology we assign the atom names, bonds etc. to make the topology. 
     
     Methods:
-    pack_particles_on_shape():
-        Pack particles onto a specified shape within a cell of given radius.
+    pack_particles_on_shape() (funct):
+        Packs particles onto a specified shape within a cell of given radius.
         
-    Returns:
-    self.particles():
-        A list of the particle positions where (0,0,0) is always the center particle. 
+    Output:
+    self.particles() (list):
+        An ordered list of the particle positions where (0,0,0) is always the center particle (and the first!). 
     """
     def __init__(self):
         self.cli_parser = CLIParser()
@@ -44,10 +44,15 @@ class CellConstructor:
              
     def pack_particles_on_shape(self):
         """
-            Takes .JSON input and uses the information there (nr_of_particles, cell_radius, and packing_shape) to create coordinates of a cell. 
-            The packing for ellipsoids is currently bad. Note that there is no direct error handling here, since the user is not expected to change
-            the number of particles or radius themselves --> these will only be changed in the development phase. Since the parameters can be
-            printed in -verbose mode that should make finding problems clear enough. Returns the particle positions. 
+        Takes .JSON input and uses the information there (nr_of_particles, cell_radius, and packing_shape) to create coordinates of a cell. 
+        Note that there is no direct error handling here, since the user is not expected to change the number of particles or radius themselves --> 
+        these will only be changed in the development phase. However, parameters are still printed in '--verbose' mode
+                        
+        Output:
+            self.particles (list) - A list of all particle positions in the cell, where the first coordinate is the center particle. 
+                
+        Note:
+            'cuboid' and 'ellipsoid' packing not properly supported. 
         """
     
         args = self.cli_parser.parse_args()
@@ -74,6 +79,7 @@ class CellConstructor:
                 self.particles.append((x, y * cell_radius, z))
                                 
         elif shape == 'cuboid':
+            #### DOES NOT WORK PROPERLY!!!!
             # Generate a face centered cubic (FCC) lattice
             # define particles per lattice to fit them on
             nr_of_particles = nr_of_particles + 1 # to account for center particle
@@ -88,13 +94,13 @@ class CellConstructor:
                             self.particles.append((x, y, z))
                            
         elif shape == 'ellipsoid':
+            #### DOES NOT WORK PROPERLY!!!!
             # Ellipsoids are much more complicated and formal methods require solving of the elliptic integral: https://mathworld.wolfram.com/EllipticIntegraloftheSecondKind.html
             # A formal Python implementation can be found here: https://github.com/maxkapur/param_tools
-            # Acceptance/rejection criteria scale poorly but since the number of particles we need is comparatively small this is good enough 
-            # (and I wouldn't even know how to implement a geometrical method ^^)
+            # Some type of overlap method? --> slow but only couple hundred particles so could work. 
             
             while len(self.particles) < nr_of_particles + 1 : #account for center particle here!
-                # First generate random spherical coordinates
+                # Generate random spherical coordinates
                 # and scale by the coordinates by the poles of the ellipsoid
                 theta = np.random.uniform(0, 2 * np.pi)
                 phi = np.arccos(2 * np.random.uniform(0, 1) - 1)
@@ -111,6 +117,7 @@ class CellConstructor:
                 is_not_too_close = True
                 for particle in self.particles:
                     #calculate Euclidean distance between each particle
+                    ## note: can use np.linalg.norm
                     distance = np.sqrt(sum((np.array(particle) - np.array(new_particle))**2))
                     if distance < 1.0:
                         is_not_too_close = False
@@ -137,7 +144,7 @@ class CellConstructor:
         if args.verbose:
             print(f"\nVERBOSE MODE ENABLED. Currently creating a single cell object with {nr_of_particles} particles...\n") 
         
-            ### if --verbose flag enabled, save an image plot of the packed cell as a quick reference
+            ### if --verbose flag enabled, save an image plot of the packed cell as a reference
             fig = plt.figure(figsize=(10, 8)) 
             ax = fig.add_subplot(111, projection='3d')
 
@@ -197,6 +204,19 @@ class CellTopology:
         self.nnneighbours = {} # dict that stores the indices and atomnames of n-nearest neighbours in the membrane
         
     def assign_atom_names(self):
+        """
+        This method is responsible for assigning atom names to particles based on user-defined preferences and settings.
+        It ensures that membrane beads are distributed according to the specified membrane type, and junction beads are
+        optionally included if requested.
+        
+        Output:
+            self.atomnames (dict) - A dict where the key is atomtype, and the values are coordinates. 
+            
+        Note: 
+            The current logic works on a ratio of junction beads. Note also that an even distribution of membrane bead
+            types is assumed. In the future .JSON can be expanded to allow for manual selection of the number of beads per type. 
+        """
+
         args = self.cli_parser.parse_args()
         # access particle positions
         self.particles = self.cell.pack_particles_on_shape()
@@ -208,11 +228,11 @@ class CellTopology:
         membrane_beads = json_values["membrane_beads"]
         membrane_beads = membrane_beads.split(", ")
         
-        #First we make all positions membrane type based on input preferences!
+        #Then make all positions membrane type based on input preferences!
         if membrane_type == "even":
             particles = [particle for particle in self.particles if particle != (0, 0, 0)] #exclude center particle
 
-            #count how often each membrane bead should be used, assuming even distribution
+            #count how often each membrane bead should be used, assuming even distribution for now!
             count_each_memb_type = len(particles) // len(membrane_beads)
             atomnames_list = membrane_beads * count_each_memb_type
             random.shuffle(atomnames_list)
@@ -265,16 +285,15 @@ class CellTopology:
             print(*(map(lambda x: x[1], self.atomnames.items())))
             print(f"\nMembrane beads have been packed in a '{membrane_type}' fashion, if you enabled junction beads, they are randomly distributed over the surface.")
             
-            
     def find_nearest_neighbours(self):
         """
-            Uses output from assign_atom_names() to determine the n-nearest neighbours on the surface membrane, if enabled by the user in 'input.JSON'. 
+        Uses output from assign_atom_names() to determine the n-nearest neighbours on the surface membrane, if enabled by the user in 'input.JSON'. 
             
-            Output:
-                A dict (self.nnneighbours) with as keys the indices of the connected neighbours and as value their atomnames. 
+        Output:
+            A dict (self.nnneighbours) with as keys the indices of the connected neighbours and as value their atomnames. 
                 
-                If --verbose is enabled:
-                    A plot 'CELL_surface_bonds-{time}.png' of the n-neighbour scheme based on the user input to validate. 
+            If --verbose is enabled:
+                A plot 'CELL_surface_bonds-{time}.png' of the n-neighbour scheme based on the user input to validate. 
         """
         args = self.cli_parser.parse_args()
         
@@ -329,7 +348,7 @@ class CellTopology:
                         break
                         # need both the index and atomname to find the right key
                 
-                #this atom (178) is quite central, use it to draw surface bonds
+                #this atom (178) is relatively central, use it to draw surface bonds
                 # can pick any other index here if needed
                 atom_key = f"{178} {selected_atom_name}"
                 neighbours = self.nnneighbours.get(atom_key, [])
@@ -364,7 +383,6 @@ class CellTopology:
         
         Output:
             A GROMACS compatible coordinate (.gro) file on disk formatted as CELL-{timeprint}.gro
-
         """
         self.assign_atom_names()
         self.find_nearest_neighbours()
@@ -372,7 +390,7 @@ class CellTopology:
         args = self.cli_parser.parse_args()
         
         now = datetime.datetime.now()
-        gro_header = "GRO file of CELL with {} particles at {}\n".format(str(len(self.particles)), now.strftime("%H:%M:%S"))
+        gro_header = "GRO file of CELL with {} particles written at {}\n".format(str(len(self.particles)), now.strftime("%H:%M:%S"))
         
         self.groname = "CELL-{}.gro".format(now.strftime("%H-%M-%S"))
 
@@ -454,6 +472,7 @@ class CellTopology:
                 itp.write("; membrane surface neighbour bonds\n")
                 
                 #neighbours are constructed per particle, so there will be duplicate bonds as a result. 
+                # imagine e.g. '3 8' vs '8 3' --> these are functionally identical
                 existing_bonds = set() #Store only unique bonds here
 
                 for index_atomname, neighbours in self.nnneighbours.items():

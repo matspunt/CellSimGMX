@@ -5,7 +5,7 @@
             "value": 180
         },
         "initial_packing_shape": {
-            "description": "The initial shape for packing the cells. Allows 'spherical', 'cuboid' and 'ellipsoid'",
+            "description": "The initial shape for packing the cells. Currently only allows 'spherical'",
             "value": "spherical"
         },
         "membrane_type": { 
@@ -36,34 +36,54 @@
     "Tissue": {
         "number_of_cells": {
             "description": "The number of cells in the system",
-            "value": 64
+            "value": 20
         },
         "tissue_packing": {
             "description": "The packing configuration of the tissue. Allows 'grid', 'hexagonal', 'monolayer', 'disordered'",
             "value": "monolayer"
+        },
+        "packing_attempts": {
+            "description": "When 'disordered' packing is enabled, defines the number of attempts for packing the cells",
+            "value": 200
         }
     },
     "Matrix": {
         "matrix_on_off": {
-            "description": "Set matrix on or off in simulation. ",
+            "description": "Set matrix on or off in simulation",
             "value": "on"
+        },
+        "matrix_beads": {
+            "description": "Sets what type of matrix beads are used. e.g. 'MX1', 'MX1, MX2'",
+            "value": "MX1, MX2"
         },
         "nr_of_layers": {
             "description": "Sets matrix thickness, i.e. the number of layers",
-            "value": 1
+            "value": 3
+        },
+        "matrix_position_restraint": {
+            "description": "Sets the x, y, z position restraint force constant of the matrix",
+            "value": 1000
         }
     },
     "Simulation": {
         "simulation_type": {
             "description": "Sets the type of simulation, either 'cell' or 'tissue'. In case of 'cell', all tissue options are ignored in the input.JSON",
-            "value": "tissue"
+            "value": "cell"
+        },
+        "box_coord_offset": {
+            "description": "Fit the box or include vacuum offset at the edge (for periodicity). '0' sets the tightest fit, >0 (nm) is applied as offset. ",
+            "value": 0
+        },
+        "ensemble": {
+            "description": "Ensemble to run production in. Supports 'NVE', 'NVT', 'NpT'. Affects .mdp settings",
+            "value": "NVE"
         },
         "timestep": {
             "description": "The timestep used in GMX (defined as picoseconds)",
             "value": 0.04
         },
             "integrator": {
-                "description": "Sets the integrator. Allows for 'leapfrog' and 'langevin' where 'langevin' disables Tcoupl and sets ld-seed. ",
+                "description": "Sets the integrator. Allows for 'leapfrog' and 'langevin' where 'langevin' disables explicit Tcoupl and sets ld-seed. ",
                 "value": "leapfrog"
             }
     }

@@ -15,7 +15,7 @@ import logging
 import datetime
 from cellsimgmx import JSONParser, ForcefieldParserGMX
 from cellsimgmx import CellTopology
-from cellsimgmx import TissueConstructor
+from cellsimgmx import TissueConstructor, MatrixConstructor, SystemConstructor
 
 def main():
     now = datetime.datetime.now()
@@ -38,6 +38,7 @@ def main():
     logging.info("Started programme execution. ")
     
     #extract input information from user settings and process the force field
+    # Note: can clean up __main__ logic when code is production ready
     json_parser = JSONParser()
     ff_parser = ForcefieldParserGMX()
     json_parser.load_json()
@@ -48,8 +49,8 @@ def main():
     celltopology.build_gro_file_cell()
     celltopology.build_top_from_cell()
     
-    tissue = TissueConstructor() #__init__ launches class in this instance
-    
+    system = SystemConstructor() #__init__ launches class (builds tissue and/or matrix)
+        
     logging.info("Succesfully ended programme execution. No errors were found. \n")
     
 if __name__ == "__main__":
