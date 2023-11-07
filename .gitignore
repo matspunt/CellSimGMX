@@ -1,0 +1,21 @@
+# Exclude build information from pip
+cellsimgmx.egg-info/
+bdist.linux-x86_64
+lib
+__pycache__
+
+# Exclude GMX & programme files
+*xtc
+*gro
+*mdp
+*tpr
+*log
+*itp
+CELL*
+TISSUE*
+MX*
+*top
+
+#used for programme testing
+output_dir/
+
