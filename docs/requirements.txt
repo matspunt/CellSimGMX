@@ -1,3 +1,4 @@
+#Note: these are requirements for building the docs, required for ReadTheDocs automated building
 numpy
 scipy
 matplotlib

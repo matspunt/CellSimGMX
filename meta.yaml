@@ -1,0 +1,21 @@
+package:
+  name: cellsimgmx
+  version: "0.0.1"
+
+source:
+  git_url: https://github.com/matspunt/CellSimGMX
+  git_tag: v0.0.1
+
+requirements:
+  build:
+    - python
+    - setuptools
+  run:
+    - python
+    - numpy
+    - matplotlib
+    - scipy
+
+about:
+  home: https://github.com/matspunt/CellSimGMX
+  license: GPL V3
