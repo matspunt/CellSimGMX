@@ -30,18 +30,13 @@ git clone https://github.com/matspunt/CellSimGMX.git
 The code comes with a force field (```forcefield.itp```) for all the VdW particles in the system. An input file ```input.json``` is used to determine the specifications of the system
 used for the simulation (amount of junction particles, distribution of them etc). The parameter descriptions should speak for themselves. 
 
-## Bugs / to dos
+## Known bugs
 - Disordered tissue packing sometimes breaks cells due to wrong distance treshold logic (easy to fix)
 - Matrix input for now only allows a single atom name ('MX1') and a single layer. 
-- 
 
-## Notes for Mats
-
+## Todos
 - Note: stress test tissue packing logic for large number of cells!!
-- Include documentation. 
 - Apply weak position restraint to matrix particles. 
-- Explain equilibration routine in code documentation!!!!
-- Explain naming conventions documentation!!!!
 - Optimize matrix distance based on simulation logic.
 - Although relative paths work fine, absolute paths are probably best in feeding to the programme. 
 
@@ -58,12 +53,13 @@ Essential features (**HIGH PRIORITY**)
 - [x] Come up with files and simulation directory layout. How is everything run and named? How should the files be organized for the user?
 
 In the future (**MEDIUM PRIORITY**)
+- [ ] Include: https://github.com/shirtsgroup/physical_validation to assess physical reasonableness systems. 
 - [ ] Allow inhomogeneous system creation from different cell types (i.e. with a different distribution of junction beads, VdW properties etc) instead of merely duplicating a single type. 
 - [ ] Introduce analysis modules which either wrap GMX tools or our own implementation which calculate some properties of the systems. 
 - [ ] Introduce a nucleus within the Cell (a mini cell with smaller sigma?) at random positions in the tisuse. Keep the center particle independent of the nucleus. 
 
 Nice-to-have's (**LOW PRIORITY**)
-- [ ] Include documentation of the code using sphinx / doxygen. 
+- [x] Include documentation of the code using sphinx / doxygen. 
 - [ ] Make installation compatible with conda (currently only pip is supported)
 
 ## Analysis modules
@@ -76,11 +72,10 @@ Nice-to-have's (**LOW PRIORITY**)
     * V) the number of crashes reported for duplicates of that simulation. 
 - [ ] A metric which can somehow quantify the shape within bulk tissue (hard to inspect visually)\
 - [ ] A metric which assesses holes occuring on the surface of cells. 
-- [ ] ????
 
 ## Basic model description
 
-- Currently all simulations in the GitHub were run at 310 K (NVT) and 1 bar (NPT), using the v-rescale thermostat and Parrinello-Rahman barostat. 
+- Currently all simulations in the GitHub were run at 310 K (NVT) and 1 bar (NPT), using the v-rescale thermostat and Parrinello-Rahman barostat (switch to c-rescale?)
 
 - A cell radius of 1.85 nm is currently used. In combination with this, a force constant of 250 needs to be used at minimum at <40 fs time steps to prevent energy leakage in NVE. 
 
