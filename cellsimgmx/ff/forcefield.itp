@@ -37,6 +37,11 @@
    J1  J1   1   0.47   3.5
    J1  M1   1   0.47   3.5
    J1  M2   1   0.47   3.5
+   ; interactions between matrix and cell beads
+   M1  MX1   1   0.47   3.5
+   M2  MX1   1   0.47   3.5
+   J1  MX1   1   0.47   3.5
+   J2  MX1   1   0.47   3.5
    
    ; interactions between membrane-junction beads
 

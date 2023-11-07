@@ -19,6 +19,7 @@ import re
 
 from cellsimgmx import CLIParser
 from cellsimgmx import JSONParser
+from cellsimgmx import ForcefieldParserGMX
 from cellsimgmx import CellTopology
 
 class TissueConstructor:
@@ -87,17 +88,17 @@ class TissueConstructor:
             self.read_gro_cell()
             if tissue_packing == "grid":
                 logging.info(f"You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
-                print(f"NOTE: You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
+                print(f"INFO: You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
                 self.replicate_cell_on_grid()
                 
             if tissue_packing == "hexagonal":
                 logging.info(f"You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
-                print(f"NOTE: You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
+                print(f"INFO: You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
                 self.replicate_cell_hexagonal()
                 
             if tissue_packing == "monolayer":
                 logging.info(f"You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
-                print(f"NOTE: You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
+                print(f"INFO: You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
                 self.replicate_cell_monolayer()
                 
             if tissue_packing == "disordered":
@@ -280,7 +281,7 @@ class TissueConstructor:
                         distances = np.linalg.norm(temp_coords - new_coords, axis=1)
 
                         overlap = any(distances < threshold)
-                        print(f"Cell index = {cell_index}, atom_index = {new_index} and overlap = {overlap}")
+                        #print(f"Cell index = {cell_index}, atom_index = {new_index} and overlap = {overlap}")
 
                         if not overlap:
                             self.tissue_coords[new_index] = {'name': data['name'], 'coords': new_coords.tolist()}
@@ -310,14 +311,20 @@ class MatrixConstructor:
         
     build_matrix_tissue():
         Builds a matrix object for a tissue (if so requested). 
+        
+    build_matrix_top():
+        Generates a matrix topology (.itp) based on the requested matrix type. 
                 
     """
     def __init__(self):
         self.cli_parser = CLIParser()
         self.json_parser = JSONParser()
+        self.ff_parser = ForcefieldParserGMX()
         self.tissue = TissueConstructor() # tissue contains both the contents of CELL.gro and the tissue dicts + settings.
         json_values = self.json_parser.json_values
         self.matrix_on_off = json_values["matrix_on_off"]
+        self.simulation_type = json_values["simulation_type"]
+        self.tissue_packing = json_values["tissue_packing"]
         self.matrix_coords = {} # if enabled, contains JUST the matrix information
         self.system_coords = {} # will contain the final system information after class is executed!
         
@@ -334,50 +341,58 @@ class MatrixConstructor:
             self.system_coords (dict) - In case no matrix was requested. Contains cell or tissue coordinates
                 depending on 'simulation' type JSON setting.
         """
-        
-        json_values = self.json_parser.json_values
-        simulation_type = json_values["simulation_type"]
-        tissue_packing = json_values["tissue_packing"]
-        
-        if self.matrix_on_off == "off" and simulation_type == "tissue":
+
+        if self.matrix_on_off == "off" and self.simulation_type == "tissue":
             logging.warning(f"You have disabled the matrix ('{self.matrix_on_off}'), ignoring all matrix settings. ")
             #set system coordinates to that of the previously constructed tissue
             self.system_coords = self.tissue.tissue_coords.copy()
-        if self.matrix_on_off == "off" and simulation_type == "cell":
+        if self.matrix_on_off == "off" and self.simulation_type == "cell":
             logging.warning(f"You have disabled the matrix ('{self.matrix_on_off}'), ignoring all matrix settings. ")
             #set system coordinates to that of an individual cell
             self.system_coords = self.tissue.cell_gro_content.copy()
         else:
-            if self.matrix_on_off == "on" and simulation_type == "cell" and tissue_packing != "disordered":
+            if self.matrix_on_off == "on" and self.simulation_type == "cell":
+                logging.info(f"Currently fitting '{self.simulation_type}' object on a matrix...")
+                print(f"INFO: Matrix is set to '{self.matrix_on_off}'. Building the matrix object. ")              
                 self.build_matrix_cell()
-            if self.matrix_on_off == "on" and simulation_type == "tissue" and tissue_packing != "disordered":
+            if self.matrix_on_off == "on" and self.simulation_type == "tissue" and self.tissue_packing != "disordered":
+                logging.info(f"Currently fitting '{self.simulation_type}' object on a matrix...")
+                print(f"INFO: Matrix is set to '{self.matrix_on_off}'. Building the matrix object. ")             
                 self.build_matrix_tissue()
-            if self.matrix_on_off == "on" and simulation_type == "tissue" and tissue_packing == "disordered":
+            if self.matrix_on_off == "on" and self.simulation_type == "tissue" and self.tissue_packing == "disordered":
                 logging.error("Disordered tissue packing currently is not supported with a matrix. Change the packing type or set the matrix to 'off'.")
-           
+                sys.exit(1)           
+                
     def build_matrix_cell(self):
         """
         Generates coordinates and topology for a matrix object based on a single cell. 
         
         Parameters:
-            self.tissue_cell_gro_content (dict): The individual cell coordinates
+            self.tissue.cell_gro_content (dict): The individual cell coordinates
             
         Returns:
-            self.matrix_coords (dict): Atom names and coords of matrix element (dict key = atom index)
+            self.matrix_coords (dict): Atom names and coords of matrix element (dict key = atom index). 
+                This dict is required for constructing the topology. 
             self.system_coords (dict): Combined  dict of cell + matrix. 
+                This dict is required for parsing the final system coordinates. 
 
+        Todo:
+             - Allow different matrix bead names than MX1
+             - Multiple layers stack oddly
         """
+        args = self.cli_parser.parse_args()
+
         json_values = self.json_parser.json_values
         matrix_layers = json_values["nr_of_layers"]
+        #matrix_beads = json_values["matrix_beads"] - currently unused!
         
-        matrix_offset = 0.25 # in nm, distance between matrix beads (test for stability!)
         matrix_z_offset = 0.4 # in nm, distance between cell and first matrix layer
 
         # we fit the matrix under the cell in z-direction, thus need to look for 'lowest'
         # z coordinate in the system (in this case, a single cell)
         lowest_z = min(atom['coords'][2] for atom in self.tissue.cell_gro_content.values())
         
-        #want to center the 
+        #want to center the matrix with respect to the cell on top
         center_x = sum(atom['coords'][0] for atom in self.tissue.cell_gro_content.values()) / len(self.tissue.cell_gro_content)
         center_y = sum(atom['coords'][1] for atom in self.tissue.cell_gro_content.values()) / len(self.tissue.cell_gro_content)
 
@@ -388,8 +403,6 @@ class MatrixConstructor:
         matrix_x = max_x * 4
         matrix_y = max_y * 4
         
-        #### Todo: ALLOW FOR DIFFERENT MATRIX BEAD NAMES!!!
-        ### Todo: fix matrix offsets!!!!!!!!!
         atom_index = 0
 
         for layer in range(matrix_layers):
@@ -418,6 +431,134 @@ class MatrixConstructor:
             }
             self.system_coords[next_index] = new_atom_info
             next_index += 1
+        
+        logging.info(f"Succesfully constructed a matrix object of {len(self.matrix_coords)} particles")
+        
+        if args.verbose:
+            print(f"\nSuccesfully constructed a matrix object of '{len(self.matrix_coords)}' particles\n")  
+        
+        self.build_matrix_top()
+        
+    def build_matrix_tissue(self):
+        """
+        Generates coordinates and topology for a matrix object based on a tissue.  
+        
+        Parameters:
+            self.tissue.tissue_coords (dict): The individual cell coordinates
+            
+        Returns:
+            self.matrix_coords (dict): Atom names and coords of matrix element (dict key = atom index)
+                This dict is required for constructing the topology. 
+            self.system_coords (dict): Combined  dict of tissue + matrix. 
+                This dict is required for parsing the final system coordinates. 
+
+        Todo:
+             - Allow different matrix bead names than MX1
+             - Multiple layers stack oddly
+        """
+        
+        args = self.cli_parser.parse_args()
+        
+        json_values = self.json_parser.json_values
+        matrix_layers = json_values["nr_of_layers"] #only 1 currently works well.
+        #matrix_beads = json_values["matrix_beads"] - currently unused!
+        
+        matrix_z_offset = 0.4 # in nm, distance between cell and first matrix layer
+
+        # logic is exactly the same as for single CELL, so removed comments
+        lowest_z = min(atom['coords'][2] for atom in self.tissue.tissue_coords.values())
+        center_x = sum(atom['coords'][0] for atom in self.tissue.tissue_coords.values()) / len(self.tissue.tissue_coords)
+        center_y = sum(atom['coords'][1] for atom in self.tissue.tissue_coords.values()) / len(self.tissue.tissue_coords)
+
+        max_x = max(atom['coords'][0] for atom in self.tissue.tissue_coords.values())
+        max_y = max(atom['coords'][1] for atom in self.tissue.tissue_coords.values())
+        matrix_x = max_x * 2
+        matrix_y = max_y * 2
+
+        atom_index = 0
+
+        for layer in range(matrix_layers):
+            z_offset = lowest_z - matrix_z_offset - (layer + 1) * matrix_z_offset
+            # Generate matrix particles centered at (0, 0, 0) with adjusted z coordinate
+            for x in range(int(matrix_x) + 1):
+                for y in range(int(matrix_y) + 1):
+                    particle = {
+                        'name': 'MX1',
+                        'coords': [x - matrix_x / 2 + center_x, y - matrix_y / 2 + center_y, z_offset],
+                    }
+                    self.matrix_coords[atom_index] = particle
+                    atom_index += 1
+        
+        #after preparing the matrix coordinates, we finalize the self.system_coords dict
+        # continue from last index of CELL
+        last_index = max(self.tissue.tissue_coords.keys())
+        self.system_coords = self.tissue.tissue_coords.copy()
+        
+        next_index = last_index + 1
+        # then add the matrix dict but index the atom indices again!
+        for atom_index, atom_info in self.matrix_coords.items():
+            new_atom_info = {
+                'name': atom_info['name'],
+                'coords': atom_info['coords']
+            }
+            self.system_coords[next_index] = new_atom_info
+            next_index += 1
+            
+        logging.info(f"\nSuccesfully constructed a matrix object of '{len(self.matrix_coords)}' particles\n")
+        
+        if args.verbose:
+            print(f"\nSuccesfully constructed a matrix object of '{len(self.matrix_coords)}' particles\n")  
+        
+        self.build_matrix_top()
+        
+    def build_matrix_top(self):
+        """
+        Constructs the topology of a matrix based on the 'self.matrix_coords' object. Applies position restraints
+        on each atom in the matrix. Agnostic to bead names (as long as they occur in the force field!). As much
+        information as possible is taken from the forcefield.itp given by the user. 
+        
+        Works with both matrix for a single cell, and tissue. 
+        
+        Outputs:
+            A topology MX-{timestamp}.itp 
+        """
+        
+        args = self.cli_parser.parse_args()
+        now = datetime.datetime.now()
+        
+        self.itpname = "MX-{}.itp".format(now.strftime("%H-%M-%S"))
+        
+        with open(f"{args.output_dir}/toppar/{self.itpname}", "w") as itp:
+            #Write the topology header
+            header = "; Topology file for matrix built at {}\n".format(now.strftime("%H:%M:%S"))
+            itp.write(header)
+            ff_itp =  f"; Copied the force field into 'toppar' from:\n;#include \"{self.ff_parser.itp_path}\"\n"
+            itp.write(ff_itp)
+            
+            # Write the [moleculetype] directive and the [atoms] directive based on the matrix_coords dict
+            itp.write("\n[ moleculetype ]\n; Name        nrexcl\n  MX          1\n\n[ atoms ]\n; nr type resnr residue atom cgnr  charge   mass\n")
+
+            for index, atom_info in self.matrix_coords.items():  
+                resname = "MX"
+                atom_nr = index + 1
+                atomname = atom_info['name']
+                mass = self.ff_parser.atomtypes[atomname]['mass']
+                itp.write("  {:<3s}  {:<3s}   1    {:<3s}    {:<3s}  {:<3s} 0.0000  {:<3s}\n".format(str(atom_nr), atomname, resname, atomname, str(atom_nr), str(mass)))
+
+            # matrix particles are not bound to each other - they solely interact through LJ
+            # but we do apply position restraints on each matrix atom 
+            # the value of position restraint is tuned on the .mdp level
+            itp.write("\n#ifdef POSRES\n[ position_restraints ]\n; i  funct          fcx              fcy                 fcz\n")
+            for index, _ in self.matrix_coords.items():  
+                atom_nr = index + 1
+                posres = "POSRES_MATRIX_FC"
+                itp.write("  {:<3s}   1    {:<6s}    {:<6s}      {:<6s}\n".format(str(atom_nr), posres, posres, posres))
+            
+        logging.info(f"A matrix topology file '{args.output_dir}/{self.itpname}' has been built")
+        itp.close()
+        
+        if args.verbose:
+            print(f"\nVERBOSE MODE ENABLED. A matrix topology file '{args.output_dir}/{self.itpname}' has been built")
         
 class SystemConstructor:
     """
@@ -473,8 +614,15 @@ class SystemConstructor:
     
     def write_gro_system(self):
         """
-        < write docstring > 
-         - Include logic for different atom names etc. 
+        This function wrtites the coordinates (.GRO) of particles of a System. A 'System' is defined
+        as per the input.JSON. It can contain a cell, a tissue, a tissue with matrix etc dependent
+        on input logic. GRO writing is independent of input settings however. 
+        
+        By default, atoms are centered in the box. If desired, a customizable offset can be added
+        to increase the vacuum in the box to counteract PBC effects, or make minimization work. 
+        
+        Outputs:
+            SYSTEM-{timestamp}.gro - Containing the coordinates of the final system. 
         """
         
         json_values = self.json_parser.json_values
@@ -537,6 +685,7 @@ class SystemConstructor:
             gro.write(str(len(self.centered_system_coords)) + "\n")
             
             if centering == True:
+                logging.info("Centering of System coordinates is enabled!")
                 #take coordinates from translated (centered) dict
                 for atom_index, atom_data in self.centered_system_coords.items():
                     atomname = atom_data["name"]
@@ -558,6 +707,7 @@ class SystemConstructor:
                     gro.write(line)
                     
             if centering == False:
+                logging.info("Centering of System coordinates is disabled!")
                 #take coordinates from non-translated dict
                 for atom_index, atom_data in self.matrix.system_coords.items():
                     atomname = atom_data["name"]
@@ -580,6 +730,41 @@ class SystemConstructor:
             gro.write("{:>10.5}{:>10.5}{:>10.5f}\n".format(extra_box_size[0], extra_box_size[1], extra_box_size[2]))
         gro.close()
         
-        logging.info(f"Built a .gro file '{args.output_dir}/{self.groname}' of a tissue. ")
+        logging.info(f"Built a .gro file '{args.output_dir}/{self.groname}' of the final requested system ")
+        print(f"INFO: Coordinate generation finished, '{args.output_dir}/{self.groname}' is saved. ")
         
-        #if args.verbose etc etc etc.
+        self.construct_system_topology()
+        logging.info(f"Topology and subtopologies '{args.output_dir}/system.top' built of the final system ")
+        print(f"INFO: All input creation is completed. ")
+        
+    def construct_system_topology(self):
+        """
+        Constructs the top file required to run the simulation, links itps and forcefield
+        """
+        
+        args = self.cli_parser.parse_args()
+               
+        json_values = self.json_parser.json_values
+        matrix_on_off = json_values["matrix_on_off"]
+        simulation_type = json_values["simulation_type"]
+        
+        with open(f"{args.output_dir}/system.top", "w") as top:
+            forcefield =  f"#include \"{args.output_dir}/toppar/forcefield.itp\"\n"
+            top.write(forcefield)
+            cell_itp = f"#include \"{args.output_dir}/toppar/{self.matrix.tissue.cell.itpname}\"\n"
+            top.write(cell_itp)
+            if matrix_on_off == 'on':
+                matrix_itp = f"#include \"{args.output_dir}/toppar/{self.matrix.itpname}\"\n"
+                top.write(matrix_itp)
+            if simulation_type == "cell":
+                number_of_cells = 1
+            if simulation_type == "tissue":
+                number_of_cells = json_values["number_of_cells"]
+            cells =  f"\n[ system ]\nCellSimGMX system\n\n[ molecules ]\nCELL    {number_of_cells}" 
+            top.write(cells)
+            #the matrix individual particles are all written to .itp because of posres so there is only
+            # a single matrix 'molecule' in the simulation
+            matrix = "\nMX      1"
+            if matrix_on_off == 'on':
+                top.write(matrix)
+        top.close()

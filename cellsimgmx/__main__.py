@@ -15,13 +15,13 @@ import logging
 import datetime
 from cellsimgmx import JSONParser, ForcefieldParserGMX
 from cellsimgmx import CellTopology
-from cellsimgmx import TissueConstructor, MatrixConstructor, SystemConstructor
+from cellsimgmx import SimulationPreparation
 
 def main():
+    ### LOGGING DETAILS
     now = datetime.datetime.now()
     
-    ### LOGGING DETAILS
-    ## Todo: save .log in output-dir!
+    ### note, logfile is saved where programme is executed, change this at some point
     logging.basicConfig(
     filename = "cellsimgmx-{}.log".format(now.strftime("%H-%M")),
     level=logging.INFO, #print >INFO msgs to logfile
@@ -29,10 +29,17 @@ def main():
     )
     
     terminal_handler = logging.StreamHandler()
-    terminal_handler.setLevel(logging.WARNING)  # Only print WARNINGS or ERRORS to terminal!
+    terminal_handler.setLevel(logging.WARNING)  # Only print WARNINGS or ERRORS to terminal
     terminal_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
     logging.getLogger('').addHandler(terminal_handler)
+    
+    log_handler = None
+    for handler in logging.getLogger('').handlers:
+        if isinstance(handler, logging.FileHandler):
+            #to obtain log file name
+            log_handler = handler
+            break
     #### END LOGGING DETAILS
     
     logging.info("Started programme execution. ")
@@ -49,9 +56,10 @@ def main():
     celltopology.build_gro_file_cell()
     celltopology.build_top_from_cell()
     
-    system = SystemConstructor() #__init__ launches class (builds tissue and/or matrix)
+    system_and_simulation = SimulationPreparation() #this class generates System object and if enabled, sets up Simulation files (mdp/tpr)
         
     logging.info("Succesfully ended programme execution. No errors were found. \n")
+    print(f"CellSimGMX run complete. '{log_handler.baseFilename}' has been saved.")
     
 if __name__ == "__main__":
     main()

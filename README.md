@@ -6,8 +6,10 @@
 
 ## Explanation of repository
 
-This is a repo for the CellSimGMX project. This branch does not use PACKMOL anymore to construct the cells but builds arbitrary cells without any external tools. 
-Only GROMACS and basic Python modules (e.g. numpy, matplotlib) are necessary to use the toolkit
+This is a repo for the CellSimGMX project. This branch does not use PACKMOL anymore to construct the cells but builds arbitrary cells & tissues without any external tools. 
+Only basic Python modules (e.g. numpy, matplotlib) are necessary to use the toolkit. Gromacs is solely used
+to run simulations, and not for input file generation. This would allow compatability with other MD engines through
+coordinate and topology conversion. 
 
 ## Accessing and installing the code
 
@@ -23,27 +25,25 @@ git clone https://github.com/matspunt/CellSimGMX.git
 4. Add pip console scripts to PATH if not already there: ```export PATH="~/.local/bin:$PATH"``` in ```~/.bashrc```
 5. You can now run the programme with ```cellsimgmx``` or ```cellsimgmx -h```, or you can use ```python3 -m cellsimgx``` if you do not want to use the console script.  
 
-## Conceptual idea of the code
-
-The code has three objects "Cell", "Tissue" and "System". In ```cell.py``` a Cell object is constructed, and the force field for a single Cell is generated. Then, this object
-is used in ```tissue.py``` to build a tissue (with or without a matrix). The final tissue.gro and tissue.itp are taken into a simulation module which runs them through GROMACS. Finally, some
-basic analysis is performed on the simulation data. 
+## Inputs of the package
 
 The code comes with a force field (```forcefield.itp```) for all the VdW particles in the system. An input file ```input.json``` is used to determine the specifications of the system
 used for the simulation (amount of junction particles, distribution of them etc). The parameter descriptions should speak for themselves. 
 
+## Bugs / to dos
+- Disordered tissue packing sometimes breaks cells due to wrong distance treshold logic (easy to fix)
+- Matrix input for now only allows a single atom name ('MX1') and a single layer. 
+- 
+
 ## Notes for Mats
 
-- Todo: Matrix for tissues!!!! Atom types and layers
 - Note: stress test tissue packing logic for large number of cells!!
-- Update logging information in the code, make verbose flag work in each function!!!
-- Bug in disordered packing logic --> FIX!
-- Format output directories & files!!!!!
 - Include documentation. 
 - Apply weak position restraint to matrix particles. 
 - Explain equilibration routine in code documentation!!!!
 - Explain naming conventions documentation!!!!
 - Optimize matrix distance based on simulation logic.
+- Although relative paths work fine, absolute paths are probably best in feeding to the programme. 
 
 ## Project to do's applied to the code
 
@@ -55,7 +55,7 @@ Essential features (**HIGH PRIORITY**)
 - [x] Create various Tissue packings (```tissue.py```) based on ```input.json``` settings.
 - [x] Change how the matrix is defined (as individual particles) and create logic that works for matrix setting turned on or off. 
 - [ ] Write ```simulation.py``` or ```gromacs.py``` which takes all input files and actually runs and sets up the simulations with error handling. 
-- [ ] Come up with files and simulation directory layout. How is everything run and named? How should the files be organized for the user?
+- [x] Come up with files and simulation directory layout. How is everything run and named? How should the files be organized for the user?
 
 In the future (**MEDIUM PRIORITY**)
 - [ ] Allow inhomogeneous system creation from different cell types (i.e. with a different distribution of junction beads, VdW properties etc) instead of merely duplicating a single type. 

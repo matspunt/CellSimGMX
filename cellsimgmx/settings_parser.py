@@ -33,7 +33,7 @@ class CLIParser:
         self.parser.add_argument("--output-dir", "-out", help="Path where files should be generated and simulation should be run")
         
         #Simulation related
-        self.parser.add_argument("--no-sim", "-nosim", help="Does not run a simulation, but does generate all input files like a dryrun.")
+        self.parser.add_argument("--no-sim", "-nosim", action='store_true', help="Does not run a simulation, but does generate all input files like a dryrun.")
         
         #Miscellaneous
         self.parser.add_argument("--verbose", "-v", action="store_true", help="Optional argument. When enabled, prints detailed logging. Useful for debugging output. ")
@@ -101,7 +101,7 @@ class JSONParser:
             try:
                 with open(self.json_path, 'r') as file:
                     self.data = json.load(file)
-                    logging.info(f"Using simulation input from: {self.json_path}")
+                    logging.info(f"Using simulation input from: '{self.json_path}'")
             except json.JSONDecodeError:
                 logging.error("The supplied JSON file contains formatting errors, please check it complies with the template supplied with the CellSimGMX package and correct any typos")
                 sys.exit(1)
@@ -278,7 +278,7 @@ class ForcefieldParserGMX:
             bonded_types = list(self.bondtypes.keys())
             print(bonded_types)
 
-        logging.info("CellSimGMX has found the following atom types in the specified force field:\n")
+        logging.info("CellSimGMX has found the following atom types in the specified force field:")
         atom_names = list(self.atomtypes.keys())
         logging.info(atom_names)
         

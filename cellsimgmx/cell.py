@@ -19,6 +19,7 @@ import random
 import logging
 import os
 import sys
+import shutil
 
 from cellsimgmx import CLIParser
 from cellsimgmx import JSONParser
@@ -137,6 +138,16 @@ class CellConstructor:
                 logging.error(f"Error: Output directory '{args.output_dir}' is not readable. Do you have permissions and is the directory correct?")
                 sys.exit(1)
                 
+            if os.path.exists(args.output_dir):
+                #overwrite the simulation directories if they already exist in the output_dir
+                if os.path.exists(f"{args.output_dir}/mdps"):
+                    shutil.rmtree(f"{args.output_dir}/mdps")
+                if os.path.exists(f"{args.output_dir}/toppar"):
+                    shutil.rmtree(f"{args.output_dir}/toppar")
+                if not args.no_sim:
+                     os.makedirs(f"{args.output_dir}/mdps", exist_ok=True)
+                os.makedirs(f"{args.output_dir}/toppar", exist_ok=True)
+                
         else:
             logging.error("Error: Output dir for settings not specified. Please specify using '--output-dir' and try again")
             sys.exit(1)
@@ -200,7 +211,7 @@ class CellTopology:
         self.ff_parser = ForcefieldParserGMX()
         self.cell = CellConstructor()
         self.particles = None
-        self.atomnames = {(0,0,0): "C"} #define a dictionary where the keys will be the atom names and data are the particle positions
+        self.atomnames = {(0,0,0): "C"} #define a dictionary where the keys will be the particle positions and data are the atom names
         self.nnneighbours = {} # dict that stores the indices and atomnames of n-nearest neighbours in the membrane
         
     def assign_atom_names(self):
@@ -431,12 +442,15 @@ class CellTopology:
         now = datetime.datetime.now()
         self.itpname = "CELL-{}.itp".format(now.strftime("%H-%M-%S"))
         
-        with open(f"{args.output_dir}/{self.itpname}", "w") as itp:
+        with open(f"{args.output_dir}/toppar/{self.itpname}", "w") as itp:
             #Write the topology header
             header = "; Topology file for a single CELL generated at {}\n".format(now.strftime("%H:%M:%S"))
             itp.write(header)
-            ff_itp =  f"; Using forcefield from:\n#include \"{self.ff_parser.itp_path}\"\n"
+            ff_itp =  f"; Copied the force field into 'toppar' from:\n;#include \"{self.ff_parser.itp_path}\"\n"
             itp.write(ff_itp)
+            #we copy the force field so the force field stays constant for this simulation and we can 
+            # trust the results match with the topology
+            shutil.copy2(self.ff_parser.itp_path, "toppar/forcefield.itp")
             
             # Write the [moleculetype] directive and the [atoms] directive based on the atomnames dict
             itp.write("\n[ moleculetype ]\n; Name        nrexcl\n  CELL        1\n\n[ atoms ]\n; nr type resnr residue atom cgnr  charge   mass\n")
@@ -493,7 +507,7 @@ class CellTopology:
                                 logging.warning(f"Bondtype not found in the force field for atom index {atom_index} and {neighbour_atom_index}")
 
         itp.close()
-        logging.info(f"Built a topology file '{args.output_dir}/{self.itpname}' of a single cell. ")
+        logging.info(f"Built a cell topology file '{args.output_dir}/{self.itpname}' of a single cell. ")
         
         if args.verbose:
-            print(f"\nVERBOSE MODE ENABLED. A topology file '{args.output_dir}/{self.itpname}' has been built")
+            print(f"\nVERBOSE MODE ENABLED. A cell topology file '{args.output_dir}/{self.itpname}' has been built")
