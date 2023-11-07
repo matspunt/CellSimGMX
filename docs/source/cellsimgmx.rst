@@ -4,14 +4,6 @@ cellsimgmx package
 Submodules
 ----------
 
-cellsimgmx.analysis module
---------------------------
-
-.. automodule:: cellsimgmx.analysis
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 cellsimgmx.cell module
 ----------------------
 
