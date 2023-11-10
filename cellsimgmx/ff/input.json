@@ -26,7 +26,7 @@
         },
         "cell_radius": {
             "description": "The radius of a single cell in nm ",
-            "value": 1.85
+            "value": 3.0
         },
         "nearest_neighbour_springs": {
             "description": "The amount of neighbours on the surface (membrane) of the cell between which harmonic bonds are defined. Accepts 'off', '1', '2' and any positive integer",

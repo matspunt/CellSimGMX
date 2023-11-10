@@ -17,38 +17,25 @@ Note: documentation is currently built from the master branch.
 
 Documentation: https://cellsimgmx.readthedocs.io
 
-## Known bugs
-- Disordered tissue packing sometimes breaks cells due to wrong distance treshold logic (easy to fix)
-- Matrix input for now only allows a single atom name ('MX1') and a single layer. 
-
 ## Notes/todos
 - Note: stress test tissue packing logic for large number of cells!!
 - Apply weak position restraint to matrix particles at the .MDP level. 
-- Optimize matrix distance based on simulation logic.
 - Although relative paths work fine, absolute paths are probably best in feeding to the programme. 
 
 ## Project to do's applied to the code
 
-Essential features (**HIGH PRIORITY**)
-- [x] Ensure ```settings_parser.py``` works with the new .JSON categories and settings. Tthe JSON parsing simply reads all variables and saves them as varnames. This way it can be extended easily without having to rewrite the parsing. 
-- [x] Remove PACKMOL functionality ```cell.py```. This should have the functionality of packing arbitrary number of beads on certain shape surfaces (square, cube, ellipsoid, sphere) etc.
-- [x] In addition, it distributes particle types in a systematic way and builds the GROMACS topology from the forcefield.
-- [x] Within this logic, also include generation of the surface bonds (can be configured for arbitrary number of n-neighbours). 
-- [x] Create various Tissue packings (```tissue.py```) based on ```input.json``` settings.
-- [x] Change how the matrix is defined (as individual particles) and create logic that works for matrix setting turned on or off. 
-- [ ] Write ```simulation.py``` or ```gromacs.py``` which takes all input files and actually runs and sets up the simulations with error handling. 
-- [x] Come up with files and simulation directory layout. How is everything run and named? How should the files be organized for the user?
+Essential (High priority):
 
-In the future (**MEDIUM PRIORITY**)
-- [ ] Include: https://github.com/shirtsgroup/physical_validation to assess physical reasonableness systems. 
-- [ ] Allow inhomogeneous system creation from different cell types (i.e. with a different distribution of junction beads, VdW properties etc) instead of merely duplicating a single type. 
+- [ ] Write ```simulation.py``` or ```gromacs.py``` which takes all input files and actually runs and sets up the simulations with error handling. 
+- [ ] Allow the selection of different tissue layers (like in epidermis). Cell type in a layer would be identical. At the cell level, multiple cells have to be generated (with also allowed structural differences in nr of particles, radius and shape). Layer could be a new object between Cell and Tissue?
+- [ ] Fix disordered packing bug!
+- [ ] Expand on the matrix options. Distance between particles (eliminate vacuum), and expose the matrix scaling factor to the .JSON. 
+
+Medium priority:
+- [ ] Include: https://github.com/shirtsgroup/physical_validation to assess physical reasonableness systems. Perhaps this is overkill, and it would make more sense to look at validation of force field parameters. 
 - [ ] Introduce analysis modules which either wrap GMX tools or our own implementation which calculate some properties of the systems. 
 - [ ] Introduce a nucleus within the Cell (a mini cell with smaller sigma?) at random positions in the tisuse. Keep the center particle independent of the nucleus. 
 - [ ] Allow coordinate files to be written as PDBs with CONECT records (to visualize surface bonds). 
-
-Nice-to-have's (**LOW PRIORITY**)
-- [x] Include documentation of the code using sphinx / doxygen. 
-- [x] Make installation compatible with conda (currently only pip is supported)
 
 ## Analysis modules
 
@@ -63,7 +50,7 @@ Nice-to-have's (**LOW PRIORITY**)
 
 ## Basic model description
 
-- Currently all simulations in the GitHub were run at 310 K (NVT) and 1 bar (NPT), using the v-rescale thermostat and Parrinello-Rahman barostat (switch to c-rescale?)
+- Running simulations at 310 K (NVT) and 1 bar (NPT), using the v-rescale thermostat and c-rescale barostat. Nose-hoover is not a good idea with leapfrog due to sometimes simulating few DOF. 
 
 - A cell radius of 1.85 nm is currently used. In combination with this, a force constant of 250 needs to be used at minimum at <40 fs time steps to prevent energy leakage in NVE. 
 
