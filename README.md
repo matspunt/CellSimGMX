@@ -17,6 +17,8 @@ Note: documentation is currently built from the master branch.
 
 Documentation: https://cellsimgmx.readthedocs.io
 
+Use gromacs-2021.6 --> VS instabilities. 
+
 ## Notes/todos
 - Note: stress test tissue packing logic for large number of cells!!
 - Apply weak position restraint to matrix particles at the .MDP level. 
@@ -26,6 +28,8 @@ Documentation: https://cellsimgmx.readthedocs.io
 
 Essential (High priority):
 
+- [ ] Implement virtual site logic
+- [ ] Generate randomly rotated cells within a Layer 
 - [ ] Write ```simulation.py``` or ```gromacs.py``` which takes all input files and actually runs and sets up the simulations with error handling. 
 - [ ] Allow the selection of different tissue layers (like in epidermis). Cell type in a layer would be identical. At the cell level, multiple cells have to be generated (with also allowed structural differences in nr of particles, radius and shape). Layer could be a new object between Cell and Tissue?
 - [ ] Fix disordered packing bug!
