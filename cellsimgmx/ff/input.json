@@ -81,10 +81,6 @@
         "timestep": {
             "description": "The timestep used in GMX (defined as picoseconds)",
             "value": 0.04
-        },
-            "integrator": {
-                "description": "Sets the integrator. Allows for 'leapfrog' and 'langevin' where 'langevin' disables explicit Tcoupl. Overruled by 'ensemble', i.e. if NVE, leapfrog is always used.",
-                "value": "leapfrog"
-            }
+        }
     }
 }
