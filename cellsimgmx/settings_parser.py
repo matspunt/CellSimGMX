@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2023  Mats Punt mats.punt(at)helsinki.fi
+# Copyright (C) 2024 Mats Punt mats.punt(at)helsinki.fi
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -165,6 +165,13 @@ class JSONParser:
                             logging.error(f"{value} is not a valid simulation ensemble!")
                             sys.exit(1)
                             
+                    if var_name == "minimization":
+                        if not (isinstance(value, str) and value in ['steep', 'cg']):
+                            logging.error(f"{value} is not a valid minimization option!")
+                            sys.exit(1)
+                            
+                    
+                                                    
         if args.verbose:
             print(f"\nVERBOSE MODE ENABLED. Parameters read from: {self.json_path}.") 
             print("These are the parameters you have configured\n")

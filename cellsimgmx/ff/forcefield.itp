@@ -2,7 +2,7 @@
 ; Note that it would be best if these values were in the scientific notation since this is how GROMACS formats parameters internally. 
 ; See also: https://manual.gromacs.org/current/reference-manual/topologies/topology-file-formats.html
 
-; FORCEFIELD ALPHA V0.1
+; FORCEFIELD ALPHA V0.1 MOCKUP
 
 [ defaults ]
 ; nbfunc     comb-rule    gen-pairs  fudgeLJ fudgeQQ

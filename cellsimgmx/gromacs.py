@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2023  Mats Punt mats.punt(at)helsinki.fi
+# Copyright (C) 2024 Mats Punt mats.punt(at)helsinki.fi
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,22 +25,21 @@ class SimulationPreparation:
     Ensures and checks all necessary files are there to run GMX simulations. Creates .mdp / runfiles based
     on input.JSON for the minimization, equilibration and production part of the simulation. 
     
-    write_mdp_files():
-        Creates mdp files. 
-                
-    construct_tpr():
-        ???? --> does this belong here or in next class?    
+    write_mdp_minim():
+        Creates mdp file of minimization routine based on input.JSON
         
-    Todo: add JSON parsing options of Simulation header
+    write_mdp_eq_prod():
+        Creates mdp file of equilibration and production routine based on input.JSON 
     
     """
     def __init__(self):
         self.cli_parser = CLIParser()
         self.json_parser = JSONParser()
+        self.json_values = self.json_parser.json_values
         self.system = SystemConstructor()
         self.gmx_path = None
         self.args = self.cli_parser.parse_args()
-        #only run contents of this class if a simulation was requested
+        # only run contents of this class if a simulation was requested!
         if self.args.no_sim == True:
             logging.warning("You disabled simulations using the '--no-sim' flag, exiting now...")
 
@@ -54,14 +53,17 @@ class SimulationPreparation:
             else:
                 logging.error("GMX executable not found. Please make sure it's installed and sourced in PATH as 'gmx'")
                 sys.exit(1)
-            #Execute the functions that setup simulation input!
-            #self.create_mdp_files()
-            #self.construct(tpr)
-            
-    def build_mdp(self):
+                        
+        #execute functions
+        self.write_mdp_minim()
+        self.write_mdp_eq_prod()
+        
+    def write_mdp_minim(self):
         """
-            Function to construct mdp objects based on JSON information. 
+            Simple function to construct mdp of minimization routine, based on JSON input
         """
+        
+        minimization = self.json_values["minimization"]
         
         steep_mdp = {
             #basic minimization routine
@@ -73,7 +75,8 @@ class SimulationPreparation:
             'cutoff-scheme': 'Verlet',
             'vdw_type': 'cutoff',
             'vdw-modifier': 'Potential-shift-verlet',
-            'rvdw': '1.1'
+            'rvdw': '1.1',
+            'rcoulomb': '1.1',
             #don't have electrostatics in system so can ignore all electrostatics .mdp settings
             }
         
@@ -87,116 +90,93 @@ class SimulationPreparation:
             'cutoff-scheme': 'Verlet',
             'vdw_type': 'cutoff',
             'vdw-modifier': 'Potential-shift-verlet',
-            'rvdw': '1.1'
+            'rvdw': '1.1',
+            'rcoulomb': '1.1',
             #don't have electrostatics in system so can ignore all electrostatics .mdp settings     
         }
-
-        #assert Type in ['min', 'NVE_eq', 'NVT_eq', 'NPT_eq', 'prod'], "type should be be EM, NVT, NPT, MD"
         
-        def addMDPOption(name: str, value, comment=''):
-            """Formatting function for adding a parameter.
+        em_dict = steep_mdp if minimization == "steep" else cg_mdp
 
-            Args:
-                name (str): parameter name.
-                value (any): parameter value.
-                comment (str, optional): parameter inline comment. Defaults to ''.
-            """
+        with open(f"{self.args.output_dir}/mdps/em.mdp", mode='w') as mdp:
+            mdp.write(f"; {minimization.capitalize()} descent minimization\n")
+            for key, value in em_dict.items():
+                mdp.write(f"{key} = {value}\n")
 
-            if comment == '':
-                file.write("{:20s} = {:13s}\n".format(name, str(value)))
-            else:
-                file.write("{:20s} = {:13s} ; {:13s}\n".format(name, str(value), comment))
+    def write_dict_mdp_helper(self,dict, mdp_name):
+        """Helper function to write dictionary contents to MDP file
 
-        if Type in ['EM']:
-            dt = 0.01
-            addParam('integrator', 'steep', 'Use steep for EM.')
-            addParam('emtol', 1000, 'Stop when max force < 1000 kJ/mol/nm.')
-            addParam('emstep', dt, 'Time step (ps).')
-
-        if Type in ['NVT', 'NPT', 'MD']:
-            dt = 0.002
-            addParam('integrator', 'md')
-            addParam('dt', dt, 'Time step (ps).')
-
-        addParam('nsteps', nsteps, "{:d} ps.".format(int(dt * nsteps)))
-
-        # OUTPUT
-
-        addTitle("Output control")
-        addParam('nstxout-compressed', nstxout, 'Write .xtc frame every {:d} ps.'.format(int(dt * nstxout)))
-
-        # NEIGHBOUR SEARCHING
-
-        addTitle("Neighbour searching")
-        addParam('cutoff-scheme', 'Verlet', 'Related params are inferred by GROMACS.')
-
-        # BONDED
-
-        if Type in ['NVT', 'NPT', 'MD']:
-            addTitle("Bond parameters")
-            addParam('constraints', 'h-bonds', 'Constrain H-bond vibrations.')
-            addParam('constraint_algorithm', 'lincs', 'Holonomic constraints.')
-            addParam('lincs_iter', 1, 'Related to accuracy of LINCS.')
-            addParam('lincs_order', 4, 'Related to accuracy of LINCS.')
-
-        # ELECTROSTATICS
-
-        addTitle("Electrostatics")
-        addParam('coulombtype', 'PME', 'Particle Mesh Ewald electrostatics.')
-        addParam('rcoulomb', 1.2, 'CHARMM is calibrated for 1.2 nm.')
-        addParam('fourierspacing', 0.14)
-
-        # VAN DER WAALS
-
-        addTitle("Van der Waals")
-        addParam('vdwtype', 'cut-off', 'Twin range cut-off with nblist cut-off.')
-        addParam('rvdw', 1.2, 'CHARMM is calibrated for 1.2 nm.')
-        addParam('vdw-modifier', 'force-switch', 'Specific for CHARMM.')
-        addParam('rvdw-switch', 1.0, 'Specific for CHARMM.')
-
-        # TEMPERATURE COUPLING
-
-        if Type in ['NVT', 'NPT', 'MD']:
-            addTitle("Temperature coupling")
-            addParam('tcoupl', 'v-rescale')
-            addParam('tc-grps', 'SYSTEM')
-            addParam('tau-t', 0.5, 'Coupling time (ps).')
-            addParam('ref-t', 300, 'Reference temperature (K).')
-
-        # PRESSURE COUPLING
-
-        if Type in ['NPT', 'MD']:
-            addTitle('Pressure coupling')
-            addParam('pcoupl', 'C-rescale', 'Use C-rescale barostat.')
-            addParam('pcoupltype', 'isotropic', 'Uniform scaling of box.')
-            addParam('tau_p', 5.0, 'Coupling time (ps).')
-            addParam('ref_p', 1.0, 'Reference pressure (bar).')
-            addParam('compressibility', 4.5e-05, 'Isothermal compressbility of water.')
-
-            if Type == 'NPT' or posRes:
-                addParam('refcoord_scaling', 'com', 'Required with position restraints.')
-
-        # PERIODIC BOUNDARY CONDITIONS
-
-        addTitle("Periodic boundary condition")
-        addParam('pbc', 'xyz', 'Apply periodic boundary conditions.')
-
-        # WRAP UP
-
-        file.close()
-
+        Args:
+            dictionary (dict): Dict containing MDP options
+            filename (str): Name of the mdp_file you want to write to
+        """
+        with open(mdp_name, "w") as file:
+            for key, value in dict.items():
+                file.write(f"{key} = {value}\n")
         
-        with open("param.mdp", 'w') as mdp:
-            mdp.write(standard_minimization_mdp)
-            #format MDP correctly, not simple dict > str conversion!!
-        mdp.close()
+    def write_mdp_eq_prod(self):
+        """
+        Writes equilibration and production MDP files based on requested simulation routine
+        """
+        
+        ensemble = self.json_values["ensemble"]
+        timestep = self.json_values["timestep"] #sets production only!
+        number_of_steps = self.json_values["number_of_steps"]
+        number_of_steps = tuple(map(int, number_of_steps.split(', '))) # [0] is equilibration nsteps, [1] is production nsteps
                 
+        def extend_mdp(base_mdp, extra_mdp_options):
+            return {**base_mdp, **extra_mdp_options}
+
+        NVE_mdp = {
+            #basic NVE mdp, only options which are different from default GMX settings are included
+            'integrator': 'md',
+            'dt': '0.02', # timestep for equilibration
+            'nsteps': number_of_steps[0], # sets number of steps for equilibration
+            'nstxout-compressed': '1000',
+            'compressed-x-precision': '100',
+            'nstlist': '20',
+            'ns_type': 'grid',
+            'pbc': 'xyz',
+            'vdw_type': 'cutoff',
+            'vdw-modifier': 'Potential-shift-verlet',
+            'rvdw': '1.1',
+            'rcoulomb': '1.1',
+            'constraints': 'none'
+            # tcoupl and pcoupl are disabled by default (don't need to specify)
+        }
+        
+        self.write_dict_mdp_helper(NVE_mdp, "mdps/NVE_eq.mdp")
+
+        #EQUILIBRATION with Berendsen coupling
+        NVT_eq_mdp = extend_mdp(NVE_mdp, {'tcoupl': 'berendsen', 'tc-grps': 'System', 'tau-t': '1.0', 'ref-t': '310'})
+        NpT_eq_mdp = extend_mdp(NVT_eq_mdp, {'pcoupl': 'berendsen', 'pcoupltype': 'isotropic', 'tau_p': '2.0', 'ref_p': '1.0', 'compressibility': '4.5e-05', ';refcoord-scaling': 'com'}) #refcoord-scaling is required for simulations with pressure coupling and position restraints
+
+        #PRODUCTION with v-rescale thermostat and c-rescale barostat
+        NVE_mdp['dt'] = timestep
+        NVE_mdp['nsteps'] = number_of_steps[1]
+        NVT_prod_mdp = extend_mdp(NVE_mdp, {'tcoupl': 'v-rescale', 'tc-grps': 'System', 'tau-t': '1.0', 'ref-t': '310'})
+        NpT_prod_mdp = extend_mdp(NVT_prod_mdp, {'pcoupl': 'C-rescale', 'pcoupltype': 'isotropic', 'tau_p': '5.0', 'ref_p': '1.0', 'compressibility': '4.5e-05', ';refcoord-scaling': 'com'})
+        
+        #Save required mdps dependent on requested ensemble
+        if ensemble == "NVE":
+            NVE_mdp['dt'] = timestep
+            NVE_mdp['dt'] = number_of_steps[1]
+            self.write_dict_mdp_helper(NVE_mdp, "mdps/production.mdp")
+
+        elif ensemble == "NVT":
+            self.write_dict_mdp_helper(NVT_eq_mdp, "mdps/NVT_eq.mdp")
+            self.write_dict_mdp_helper(NVT_prod_mdp, "mdps/production.mdp")
+
+        elif ensemble == "NpT":
+            self.write_dict_mdp_helper(NVT_eq_mdp, "mdps/NVT_eq.mdp")
+            self.write_dict_mdp_helper(NpT_eq_mdp, "mdps/NpT_eq.mdp")
+            self.write_dict_mdp_helper(NpT_prod_mdp, "mdps/production.mdp")
+
 class RunSimulation:
     """
-    Executes the .tpr, tracking the simulation progress. Important progress information is printed to the terminal. 
+    Generates .tpr and runs the simulation based on mdps that are found (i.e. the required simulations are inferred from the mdps that are saved)
     """
     def __init__(self):
         self.cli_parser = CLIParser()
         self.json_parser = JSONParser()
-
-### How to handle minimization and equilibration??!
+        
+        # based on MDP files that are found, generate .tpr

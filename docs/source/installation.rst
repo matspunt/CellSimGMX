@@ -23,6 +23,8 @@ Cloning and installing through :console:`pip` or :console:`conda`
 6. **Recommended method** (pip installation in a conda venv): Make sure you are using the *local* pip version. Run :console:`conda info --envs` and explicitly link to the pip from that environment to prevent problems: :console:`/path/to/miniconda3/envs/cellsimgmx/bin/pip pip install .`. If your console scripts are not loaded (i.e. :console:`cellsimgmx` is not recognized as command) add them to your :console:`~/.bashrc` by running :console:`export PATH="~/.local/bin:$PATH"` and :console:`source ~/.bashrc`
 7. (conda installation in a conda venv): Install conda-build if you don't have it: :console:`conda install conda-build`. Build the conda package: :console:`conda build meta.yaml`. The archive will be saved somewhere in your environment files, outputted by the terminal. Install this file: :console:`conda install /home/matspunt/miniconda3/envs/cellsimgmx/conda-bld/linux-64/cellsimgmx-0.0.1-py311_0.tar.bz2 --use-local --offline`. 
 8. The package can now be called with :console:`cellsimgmx` or :console:`python3 -m cellsimgmx`. 
+..
+   /wrk/matspunt/programs/miniconda3/envs/cellsimgmx/bin/pip install ../. --upgrade for development
 
 .. warning::
    Support for installations through conda is experimental, note that conda works with explicit versioning. To prepare a conda compatible installation, a commit need to be versioned (git tag -a <version>). During development phase, using pip is thus recommended

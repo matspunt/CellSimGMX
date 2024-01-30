@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2023  Mats Punt mats.punt(at)helsinki.fi
+# Copyright (C) 2024 Mats Punt mats.punt(at)helsinki.fi
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -442,11 +442,14 @@ class CellTopology:
         now = datetime.datetime.now()
         self.itpname = "CELL-{}.itp".format(now.strftime("%H-%M-%S"))
         
+        if not os.path.exists("toppar"):
+            os.makedirs("toppar")
+        
         with open(f"{args.output_dir}/toppar/{self.itpname}", "w") as itp:
             #Write the topology header
             header = "; Topology file for a single CELL generated at {}\n".format(now.strftime("%H:%M:%S"))
             itp.write(header)
-            ff_itp =  f"; Copied the force field into 'toppar' from:\n;#include \"{self.ff_parser.itp_path}\"\n"
+            ff_itp =  f"; At the same time, copied the force field givend by -ff-dir into 'toppar' from:\n;#include \"{self.ff_parser.itp_path}\"\n"
             itp.write(ff_itp)
             #we copy the force field so the force field stays constant for this simulation and we can 
             # trust the results match with the topology

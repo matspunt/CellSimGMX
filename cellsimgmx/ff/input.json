@@ -30,13 +30,13 @@
         },
         "nearest_neighbour_springs": {
             "description": "The amount of neighbours on the surface (membrane) of the cell between which harmonic bonds are defined. Accepts 'off', '1', '2' and any positive integer",
-            "value": 6
+            "value": "off"
         }
     },
     "Tissue": {
         "number_of_cells": {
-            "description": "The number of cells in the system",
-            "value": 20
+            "description": "The number of cells in the system. Note: enable 'simulation_type' as tissue, otherwise this option is ignored.",
+            "value": 27
         },
         "tissue_packing": {
             "description": "The packing configuration of the tissue. Allows 'grid', 'hexagonal', 'monolayer', 'disordered'",
@@ -50,7 +50,7 @@
     "Matrix": {
         "matrix_on_off": {
             "description": "Set matrix on or off in simulation",
-            "value": "on"
+            "value": "off"
         },
         "matrix_beads": {
             "description": "Sets what type of matrix beads are used. e.g. 'MX1', 'MX1, MX2'",
@@ -68,19 +68,27 @@
     "Simulation": {
         "simulation_type": {
             "description": "Sets the type of simulation, either 'cell' or 'tissue'. In case of 'cell', all tissue options are ignored in the input.JSON",
-            "value": "tissue"
+            "value": "cell"
         },
         "box_coord_offset": {
             "description": "Fit the box or include vacuum offset (nm) at the edge (for periodicity). '0' sets the tightest fit, when >0, that value is applied as offset. ",
-            "value": 0
+            "value": 2
+        },
+        "minimization": {
+            "description": "Sets type of minimization, allows 'steep' and 'cg' for steepest descent and conjugate descent respectively (latter is more stringent)",
+            "value": "cg"
         },
         "ensemble": {
-            "description": "Ensemble to run production in. Supports 'NVE', 'NVT', 'NpT'. Affects .mdp settings",
-            "value": "NVE"
+            "description": "Ensemble to run production in. Supports 'NVE', 'NVT', 'NpT'. Automatically equilibrates up to that ensemble",
+            "value": "NpT"
         },
         "timestep": {
-            "description": "The timestep used in GMX (defined as picoseconds)",
+            "description": "The timestep used in GMX (picoseconds) for production. Equilibration happens at 20 fs.",
             "value": 0.04
+        },
+        "number_of_steps": {
+            "description": "Number of steps for equilibration and production (enter as comma separated value). e.g. '25000, 500000'. Supports also '-1' for indefinite runs.",
+            "value": "25000, 500000"
         }
     }
 }

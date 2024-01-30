@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2023  Mats Punt mats.punt(at)helsinki.fi
+# Copyright (C) 2024 Mats Punt mats.punt(at)helsinki.fi
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,13 +15,12 @@ import logging
 import datetime
 from cellsimgmx import JSONParser, ForcefieldParserGMX
 from cellsimgmx import CellTopology
-from cellsimgmx import SimulationPreparation
+from cellsimgmx import SimulationPreparation, RunSimulation
 
 def main():
     ### LOGGING DETAILS
+    ### note, logfile is saved where programme is executed, change this to output directory at some point if possible
     now = datetime.datetime.now()
-    
-    ### note, logfile is saved where programme is executed, change this at some point
     logging.basicConfig(
     filename = "cellsimgmx-{}.log".format(now.strftime("%H-%M")),
     level=logging.INFO, #print >INFO msgs to logfile
@@ -56,7 +55,8 @@ def main():
     celltopology.build_gro_file_cell()
     celltopology.build_top_from_cell()
     
-    system_and_simulation = SimulationPreparation() #this class generates System object and if enabled, sets up Simulation files (mdp/tpr)
+    mdp_generation = SimulationPreparation() #this class generates System object and if enabled, sets up Simulation files (mdp/tpr)
+    execute_sims = RunSimulation() # check, does this work with --no-sim flag enabled?
         
     logging.info("Succesfully ended programme execution. No errors were found. \n")
     print(f"CellSimGMX run complete. '{log_handler.baseFilename}' has been saved.")
