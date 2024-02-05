@@ -29,4 +29,4 @@ from .tissue import MatrixConstructor
 from .tissue import SystemConstructor
 
 from .gromacs import SimulationPreparation
-from .gromacs import RunSimulation
+from .gromacs import ExecuteSimulations

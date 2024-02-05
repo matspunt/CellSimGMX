@@ -277,11 +277,14 @@ class CellTopology:
             junctionnames_list = junction_beads * count_per_junction
        
             # define a random selection of our 'self.atomnames' dict with membrane beads that we are going to replace
-            # note: we are not editing the keys (particle coordinates), only the atom name!
-            replace_atomnames = random.sample(list(self.atomnames.keys()), len(junctionnames_list))
+            # note: not editing the keys (particle coordinates), only the atom name!
             
+            membrane_beads = [coord for coord in self.atomnames.keys() if coord != (0, 0, 0)] #exclude center particle!
+
+            # Replace membrane atomnames with random samples, excluding "C"
+            replace_atomnames = random.sample(membrane_beads, len(junctionnames_list))
             for coord, new_atomname in zip (replace_atomnames, junctionnames_list):
-                self.atomnames[coord] = new_atomname 
+                self.atomnames[coord] = new_atomname
             
         else:
             #if no junction beads were found, continue as normal and make no edits to 'self.atomnames'

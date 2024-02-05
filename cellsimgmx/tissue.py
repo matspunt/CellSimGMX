@@ -760,8 +760,10 @@ class SystemConstructor:
                 number_of_cells = 1
             if simulation_type == "tissue":
                 number_of_cells = json_values["number_of_cells"]
-            cells =  f"\n[ system ]\nCellSimGMX system\n\n[ molecules ]\nCELL    {number_of_cells}" 
-            top.write(cells)
+            top_info =  f"\n[ system ]\nCellSimGMX system\n\n[ molecules ]\n" 
+            top.write(top_info)
+            for _ in range(number_of_cells):
+                top.write(f"CELL    1\n")
             #the matrix individual particles are all written to .itp because of posres so there is only
             # a single matrix 'molecule' in the simulation
             matrix = "\nMX      1"

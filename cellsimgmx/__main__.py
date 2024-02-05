@@ -15,7 +15,7 @@ import logging
 import datetime
 from cellsimgmx import JSONParser, ForcefieldParserGMX
 from cellsimgmx import CellTopology
-from cellsimgmx import SimulationPreparation, RunSimulation
+from cellsimgmx import SimulationPreparation, ExecuteSimulations
 
 def main():
     ### LOGGING DETAILS
@@ -55,11 +55,10 @@ def main():
     celltopology.build_gro_file_cell()
     celltopology.build_top_from_cell()
     
-    mdp_generation = SimulationPreparation() #this class generates System object and if enabled, sets up Simulation files (mdp/tpr)
-    execute_sims = RunSimulation() # check, does this work with --no-sim flag enabled?
+    mdp_generation = SimulationPreparation()
+    execute_sims = ExecuteSimulations()
         
-    logging.info("Succesfully ended programme execution. No errors were found. \n")
-    print(f"CellSimGMX run complete. '{log_handler.baseFilename}' has been saved.")
+    print(f"CellSimGMX finished. '{log_handler.baseFilename}' has been saved.")
     
 if __name__ == "__main__":
     main()

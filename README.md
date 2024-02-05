@@ -28,9 +28,9 @@ Use gromacs-2021.6 --> VS instabilities.
 
 Essential (High priority):
 
-- [ ] Implement virtual site logic
+- [ ] Implement virtual site logic --> might need gromacs-2021.6 for this. 
 - [ ] Generate randomly rotated cells within a Layer 
-- [ ] Write  ```gromacs.py``` which takes all input files and actually runs and sets up the simulations with error handling. 
+- [ ] Write  ```gromacs.py``` which takes all input files and actually runs and sets up the simulations with error handling --> add to logger!!!
 - [ ] Allow the selection of different tissue layers (like in epidermis). Cell type in a layer would be identical. At the cell level, multiple cells have to be generated (with also allowed structural differences in nr of particles, radius and shape). Layer could be a new object between Cell and Tissue?
 - [ ] Fix disordered packing bug!
 - [ ] Expand on the matrix options. Distance between particles (eliminate vacuum), and expose the matrix scaling factor to the .JSON. 

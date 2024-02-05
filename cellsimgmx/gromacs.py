@@ -14,6 +14,8 @@
 import logging 
 import sys
 import subprocess as sp
+import os
+import glob
 from distutils.spawn import find_executable
 
 from cellsimgmx import CLIParser
@@ -42,19 +44,19 @@ class SimulationPreparation:
         # only run contents of this class if a simulation was requested!
         if self.args.no_sim == True:
             logging.warning("You disabled simulations using the '--no-sim' flag, exiting now...")
+            sys.exit(1)
 
         if self.args.no_sim == False:
             print("INFO: Starting simulation routine. ")
             logging.info(f"Succesfully made it to the simulation routine")
             self.gmx_path = find_executable("gmx") #check whether gmx is available in the path and print to the user.
             if self.gmx_path is not None:
-                print(f"INFO: gromacs found at: '{self.gmx_path}'")
-                logging.info(f"Found a gromacs executable at: '{self.gmx_path}'")
+                print(f"INFO: GROMACS found at: '{self.gmx_path}'")
+                logging.info(f"Found a GROMACS executable at: '{self.gmx_path}'")
             else:
-                logging.error("GMX executable not found. Please make sure it's installed and sourced in PATH as 'gmx'")
+                logging.error("GROMACS executable not found. Please make sure it's installed and sourced in PATH as 'gmx' before trying again")
                 sys.exit(1)
                         
-        #execute functions
         self.write_mdp_minim()
         self.write_mdp_eq_prod()
         
@@ -171,12 +173,146 @@ class SimulationPreparation:
             self.write_dict_mdp_helper(NpT_eq_mdp, "mdps/NpT_eq.mdp")
             self.write_dict_mdp_helper(NpT_prod_mdp, "mdps/production.mdp")
 
-class RunSimulation:
+class GromppWrapper:
     """
-    Generates .tpr and runs the simulation based on mdps that are found (i.e. the required simulations are inferred from the mdps that are saved)
+    Wrapper to generate .tpr files using gromacs (gmx)
     """
-    def __init__(self):
-        self.cli_parser = CLIParser()
-        self.json_parser = JSONParser()
+    def __init__(self, topol, coord, mdp, output_tpr, maxwarn=0):
+        self.topol = topol
+        self.coord = coord
+        self.mdp = mdp
+        self.output_tpr = output_tpr
+        self.maxwarn = maxwarn
+        self.run_grompp()
+
+    def run_grompp(self):
+
+        grompp = [
+            'gmx', 'grompp', #already checked for gmx executable before, for now assuming this is available
+            '-p', self.topol,
+            '-c', self.coord,
+            '-f', self.mdp,
+            '-o', self.output_tpr,
+            '-maxwarn', str(self.maxwarn)
+        ]
+
+        try:
+            grompp_result = sp.run(grompp, stdout=sp.PIPE, stderr=sp.PIPE, text=True, check=True) #grompp output is piped, only shown if execution fails
+            print(f"INFO: Succesfully preprocessed gmx files (grompp) as '{self.output_tpr}'")
+            logging.info(f"Succesfully preprocessed gmx files (grompp) as '{self.output_tpr}'")
+        except sp.CalledProcessError as e:
+            logging.error(f"There was an error running the command '{' '.join(e.cmd)}'")
+            grompp_error = e.stderr.splitlines()
+            for line in grompp_error[-15:]:
+                print(line)  #print final 15 lines of grompp error for user to troubleshoot
+            sys.exit(1)
+
+        return grompp_result.stdout
+            
+class MDRunWrapper:
+    """Wrapper to run gromacs (gmx) simulations. 
+    
+    There are more mdrun options that can be added later, for instance multidir could be used, ntomp, ntmpi etc. 
+    """
+    def __init__(self, tpr_name, nthreads=12): 
+        self.tpr_name = tpr_name
+        self.nthreads = nthreads
+        self.run_mdrun()
         
-        # based on MDP files that are found, generate .tpr
+    def run_mdrun(self):
+        mdrun = ['gmx', 'mdrun', '-v', '-deffnm', self.tpr_name, '-nt', str(self.nthreads)]
+
+        try:
+            mdrun_process = sp.Popen(mdrun, stdout=sp.PIPE, stderr=sp.PIPE, text=True)
+            
+            while True:
+                output_line = mdrun_process.stderr.readline()
+                if not output_line and mdrun_process.poll() is not None:
+                    break
+                # this is a bit buggy but it is meant to print only a single line at a time of the mdrun output --> useful for tracking of simulation duration
+                sys.stdout.write(f"\r{output_line.strip()}")
+                sys.stdout.flush()
+            sys.stdout.flush()
+            
+            mdrun_process.wait()
+            print(f"INFO: Succesfully completed mdrun request '{self.tpr_name}'            ")
+            logging.info(f"Succesfully completed mdrun request '{self.tpr_name}'")
+
+        except sp.CalledProcessError as e:
+            logging.error(f"There was an error running the command '{' '.join(e.cmd)}' \n")
+            mdrun_error = e.stderr.splitlines()
+            for line in mdrun_error[-15:]:
+                print(line)  # print final 15 lines of mdrun error for the user to troubleshoot
+            sys.exit(1)
+
+        return mdrun_process.returncode == 0
+
+class ExecuteSimulations:
+    """
+    In this class, all required simulations are grompped and executed. The required simulations are inferred from the mdps that are saved in the class "SimulationPreparation")). 
+    """ 
+        
+    def __init__(self):   
+        self.sim_list = glob.glob("mdps/*mdp")
+        self.init_coord = glob.glob(f'SYSTEM*.gro')[0] if glob.glob(f'SYSTEM*.gro') else None
+        self.topol = "system.top" #this is hardcoded anyway
+        self.run_simulations()
+         
+    def get_mdp_names(self, mdp_dir='mdp'):
+        """Based on the mdp names, the simulations will be executed. 
+
+        Args:
+            mdp_dir (str): Path where mdp files are stored
+        """
+        self.sim_list = glob.glob(os.path.join(mdp_dir, '*.mdp'))
+        
+    def run_simulations(self):
+        
+        def create_directory(sim_path):
+            if not os.path.exists(sim_path):
+                os.makedirs(sim_path)
+                     
+        #minimization is always required
+        create_directory("em")
+        GromppWrapper(self.topol, self.init_coord, "mdps/em.mdp", "em/em.tpr")
+        MDRunWrapper("em/em")
+        
+        #NVE equilibration is always required
+        create_directory("NVE_eq")
+        GromppWrapper(self.topol, "em/em.gro", "mdps/NVE_eq.mdp", "NVE_eq/NVE_eq")
+        MDRunWrapper("NVE_eq/NVE_eq")
+        
+        #figure out if NVT and NpT equilibration are required
+        eq_mdps = [mdp for mdp in self.sim_list if 'eq' in mdp]
+        
+        if "mdps/NVT_eq.mdp" in eq_mdps:
+            create_directory("NVT_eq")
+            GromppWrapper(self.topol, "NVE_eq/NVE_eq.gro", "mdps/NVT_eq.mdp", "NVT_eq/NVT_eq", maxwarn=1) #for Berendsen thermostat
+            MDRunWrapper("NVT_eq/NVT_eq")
+            
+        if "mdps/NpT_eq.mdp" in eq_mdps:    
+            create_directory("NpT_eq")
+            GromppWrapper(self.topol, "NVT_eq/NVT_eq.gro", "mdps/NpT_eq.mdp", "NpT_eq/NpT_eq", maxwarn=2) #for Berendsen therm+barostat
+            MDRunWrapper("NpT_eq/NpT_eq")
+            
+        create_directory("prod")
+            
+        if "mdps/NVT_eq.mdp" in eq_mdps and "mdps/NpT_eq.mdp" not in eq_mdps:
+            GromppWrapper(self.topol, "NVT_eq/NVT_eq.gro", "mdps/production.mdp", "prod/prod")
+            #run NVT production
+            MDRunWrapper("prod/prod")
+            
+        if "mdps/NVT_eq.mdp" and "mdps/NpT_eq.mdp" in eq_mdps:
+            GromppWrapper(self.topol, "NpT_eq/NpT_eq.gro", "mdps/production.mdp", "prod/prod")
+            # run NpT production
+            MDRunWrapper("prod/prod")
+            
+        if "mdps/NVT_eq.mdp" not in eq_mdps:
+            GromppWrapper(self.topol, "NVE_eq/NVE_eq.gro", "mdps/production.mdp", "prod/prod")
+            # run NVE production
+            MDRunWrapper("prod/prod")
+            
+        #cleanup
+        if os.path.exists("mdout.mdp"):
+            os.remove("mdout.mdp")
+

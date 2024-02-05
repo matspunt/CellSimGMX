@@ -68,7 +68,7 @@
     "Simulation": {
         "simulation_type": {
             "description": "Sets the type of simulation, either 'cell' or 'tissue'. In case of 'cell', all tissue options are ignored in the input.JSON",
-            "value": "cell"
+            "value": "tissue"
         },
         "box_coord_offset": {
             "description": "Fit the box or include vacuum offset (nm) at the edge (for periodicity). '0' sets the tightest fit, when >0, that value is applied as offset. ",
@@ -80,7 +80,7 @@
         },
         "ensemble": {
             "description": "Ensemble to run production in. Supports 'NVE', 'NVT', 'NpT'. Automatically equilibrates up to that ensemble",
-            "value": "NpT"
+            "value": "NVT"
         },
         "timestep": {
             "description": "The timestep used in GMX (picoseconds) for production. Equilibration happens at 20 fs.",
@@ -88,7 +88,7 @@
         },
         "number_of_steps": {
             "description": "Number of steps for equilibration and production (enter as comma separated value). e.g. '25000, 500000'. Supports also '-1' for indefinite runs.",
-            "value": "25000, 500000"
+            "value": "25000, 50000"
         }
     }
 }
