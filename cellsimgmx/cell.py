@@ -277,7 +277,7 @@ class CellTopology:
             junctionnames_list = junction_beads * count_per_junction
        
             # define a random selection of our 'self.atomnames' dict with membrane beads that we are going to replace
-            # note: not editing the keys (particle coordinates), only the atom name!
+            # note: we are not editing the keys (particle coordinates), only the atom name!
             
             membrane_beads = [coord for coord in self.atomnames.keys() if coord != (0, 0, 0)] #exclude center particle!
 
@@ -415,12 +415,13 @@ class CellTopology:
             for i, (coord, atomname) in enumerate(self.atomnames.items()):  
                 atomname = atomname
                 x, y, z = coord
+                resid = 1
                 resname = "CELL"
                 atom_number = i + 1
                 
                 # Format the coordinates in GRO format
                 line = "{0:>5}{1:<5}{2:>5}{3:>5}{4:>8.3f}{5:>8.3f}{6:>8.3f}\n".format(
-                    atom_number, resname, atomname, atom_number, x, y, z
+                    resid, resname, atomname, atom_number, x, y, z
                 )
 
                 gro.write(line)

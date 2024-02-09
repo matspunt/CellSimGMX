@@ -627,6 +627,8 @@ class SystemConstructor:
         
         json_values = self.json_parser.json_values
         box_coord_offset = json_values["box_coord_offset"] #used for box fitting
+        nr_of_particles = json_values["nr_of_particles"] + 1 #including center-particle
+        resid = 0
         # in case set to 3.0 for instance, this means 1.5 on each side
         # in case set to 0, the tightest possible box is simply fit. 
         
@@ -697,11 +699,16 @@ class SystemConstructor:
                     else:
                         # rest will be CELL
                         resname = "CELL"
+                    
+                    # resid increases per every increase in the number of particles per cell
+                    if atom_index % nr_of_particles == 0:
+                        resid += 1
+
                     atom_number = atom_index + 1
                     
                     # Format the coordinates in GRO format
                     line = "{0:>5}{1:<5}{2:>5}{3:>5}{4:>8.3f}{5:>8.3f}{6:>8.3f}\n".format(
-                        atom_number, resname, atomname, atom_number, x, y, z
+                        resid, resname, atomname, atom_number, x, y, z
                     )
 
                     gro.write(line)
@@ -760,10 +767,8 @@ class SystemConstructor:
                 number_of_cells = 1
             if simulation_type == "tissue":
                 number_of_cells = json_values["number_of_cells"]
-            top_info =  f"\n[ system ]\nCellSimGMX system\n\n[ molecules ]\n" 
+            top_info =  f"\n[ system ]\nCellSimGMX system\n\n[ molecules ]\nCELL {number_of_cells}" 
             top.write(top_info)
-            for _ in range(number_of_cells):
-                top.write(f"CELL    1\n")
             #the matrix individual particles are all written to .itp because of posres so there is only
             # a single matrix 'molecule' in the simulation
             matrix = "\nMX      1"
