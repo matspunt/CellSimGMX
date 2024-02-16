@@ -13,7 +13,7 @@ This is a repo for the CellSimGMX project. Only basic Python modules (e.g. numpy
 
 ## Documentation/installation
 
-Note: documentation is currently built from the master branch. 
+Note: documentation is currently bcuilt from the master branch. 
 
 Documentation: https://cellsimgmx.readthedocs.io
 
@@ -29,6 +29,7 @@ Use gromacs-2021.6 --> VS instabilities.
 Essential (High priority):
 
 - [ ] Implement virtual site logic --> might need gromacs-2021.6 for this. 
+- [ ] Update documentation. 
 - [ ] For automated simulation running, find a way to deal with freezing simulations (and report in cellsimgmx.log file?)
 - [ ] Write a wrapper for running multiple simulations. 
 - [ ] Generate randomly rotated cells within a Layer 
