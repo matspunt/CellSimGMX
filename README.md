@@ -29,6 +29,8 @@ Use gromacs-2021.6 --> VS instabilities.
 Essential (High priority):
 
 - [ ] Implement virtual site logic --> might need gromacs-2021.6 for this. 
+- [ ] For automated simulation running, find a way to deal with freezing simulations (and report in cellsimgmx.log file?)
+- [ ] Write a wrapper for running multiple simulations. 
 - [ ] Generate randomly rotated cells within a Layer 
 - [ ] Write  ```gromacs.py``` which takes all input files and actually runs and sets up the simulations with error handling --> add to logger!!!
 - [ ] Allow the selection of different tissue layers (like in epidermis). Cell type in a layer would be identical. At the cell level, multiple cells have to be generated (with also allowed structural differences in nr of particles, radius and shape). Layer could be a new object between Cell and Tissue?

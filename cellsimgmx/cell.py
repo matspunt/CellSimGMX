@@ -457,7 +457,7 @@ class CellTopology:
             itp.write(ff_itp)
             #we copy the force field so the force field stays constant for this simulation and we can 
             # trust the results match with the topology
-            shutil.copy2(self.ff_parser.itp_path, "toppar/forcefield.itp")
+            shutil.copy2(self.ff_parser.itp_path, os.path.join("toppar/forcefield.itp"))
             
             # Write the [moleculetype] directive and the [atoms] directive based on the atomnames dict
             itp.write("\n[ moleculetype ]\n; Name        nrexcl\n  CELL        1\n\n[ atoms ]\n; nr type resnr residue atom cgnr  charge   mass\n")

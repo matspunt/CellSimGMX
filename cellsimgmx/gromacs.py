@@ -104,14 +104,14 @@ class SimulationPreparation:
             for key, value in em_dict.items():
                 mdp.write(f"{key} = {value}\n")
 
-    def write_dict_mdp_helper(self,dict, mdp_name):
+    def write_dict_mdp_helper(self, dict, mdp_name):
         """Helper function to write dictionary contents to MDP file
 
         Args:
             dictionary (dict): Dict containing MDP options
             filename (str): Name of the mdp_file you want to write to
         """
-        with open(mdp_name, "w") as file:
+        with open(f"{self.args.output_dir}/{mdp_name}", mode='w') as file:
             for key, value in dict.items():
                 file.write(f"{key} = {value}\n")
         
@@ -146,7 +146,7 @@ class SimulationPreparation:
             # tcoupl and pcoupl are disabled by default (don't need to specify)
         }
         
-        self.write_dict_mdp_helper(NVE_mdp, "mdps/NVE_eq.mdp")
+        self.write_dict_mdp_helper(NVE_mdp, os.path.join("mdps/NVE_eq.mdp"))
 
         #EQUILIBRATION with Berendsen coupling
         NVT_eq_mdp = extend_mdp(NVE_mdp, {'tcoupl': 'berendsen', 'tc-grps': 'System', 'tau-t': '1.0', 'ref-t': '310'})
