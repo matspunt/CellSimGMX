@@ -61,4 +61,4 @@ def main():
     print(f"CellSimGMX finished. '{log_handler.baseFilename}' has been saved.")
     
 if __name__ == "__main__":
-    main()
+    main() 

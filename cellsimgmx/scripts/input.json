@@ -1,0 +1,5 @@
+{
+  "Cell": {
+    "nr_of_particles": {
+      "description": "The total number of particles in the surface membrane.",
+      "value": 

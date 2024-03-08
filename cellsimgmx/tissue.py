@@ -46,12 +46,7 @@ class TissueConstructor:
         
     replicate_cell_hexagonal():
         Creates a hexagonal geometry in the y-direction. The amount of shearing can be configured if needed. 
-        Stores information in 'self.tissue_coords'
-        
-    replicate_cell_disordered():
-        Puts the requested number of cells in disordered fashion (like 'gmx insert-molecules') together based 
-        on a contact distance logic. Stores information in 'self.tissue_coords'. 
-            Note: might lead to unnecessarily large box volumes for NVT.        
+        Stores information in 'self.tissue_coords'    
     """
 
     def __init__(self):
@@ -100,10 +95,6 @@ class TissueConstructor:
                 logging.info(f"You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
                 print(f"INFO: You requested '{self.simulation_type}' for simulation, packing as '{tissue_packing}'")
                 self.replicate_cell_monolayer()
-                
-            if tissue_packing == "disordered":
-                logging.warning(f"You requested '{self.simulation_type}' packing as '{tissue_packing}'. This is slow and may not always resolve!")
-                self.replicate_cell_disordered()
         
     def read_gro_cell(self):
         """
@@ -237,63 +228,6 @@ class TissueConstructor:
                         self.tissue_coords[atom_index] = {
                             "name": atom, "coords": [new_x_coord, new_y_coord, new_z_coord]}
                         atom_index += 1
-        
-    def replicate_cell_disordered(self):
-        """
-        Places the cells next to each other in disordered (random) manner, uses Euclidean distance to determine
-        whether no overlaps between atom coordinates are occurring. Runs until dictionary is filled with 
-        requested number of cells. 
-        
-        Note:  
-            Some bug in applied offset, make sure overlap is checked for all particles in cell!!
-        """
-        
-        json_values = self.json_parser.json_values
-        nr_of_cells = json_values["number_of_cells"]
-        nr_of_particles = json_values["nr_of_particles"] + 1 # for center bead
-        packing_attempts = json_values["packing_attempts"]
-        
-        threshold = 1.0 #overlap threshold in nm
-        coord_shifts = [-6,6] # between which distances (nm) to randomly translate all particle coordinates
-        #maybe scale shift in coord with number of cells?
-        
-        for cell_index in range(nr_of_cells):
-            # for the first cell, we just add the coordinates of a single cell to the tissue
-            if not self.tissue_coords:
-                for index, data in self.cell_gro_content.items():
-                    new_index = index
-                    self.tissue_coords[new_index] = {'name': data['name'], 'coords': data['coords']}
-            # for the other cells in the 'tissue', we will change the coordinates based on a distance criterion. 
-            else:
-                #store the coords in numpy array for faster lookup
-                temp_coords = np.array([entry['coords'] for entry in self.tissue_coords.values()])
-                # by calculating a defined offset for each particle in the cell, we can maintain the 
-                # cell shape as it was inside an indidual cell. 
-                offsets = np.random.uniform(coord_shifts[0], coord_shifts[1], size=(3,))
-                
-                for index, data in self.cell_gro_content.items():
-                    no_overlaps = False
-                    attempts = 0
-                    while not no_overlaps and attempts < packing_attempts:
-                        new_index = index + cell_index * nr_of_particles
-                        new_coords = data['coords'] + offsets
-                        #see: https://stackoverflow.com/questions/1401712/how-can-the-euclidean-distance-be-calculated-with-numpy
-                        distances = np.linalg.norm(temp_coords - new_coords, axis=1)
-
-                        overlap = any(distances < threshold)
-                        #print(f"Cell index = {cell_index}, atom_index = {new_index} and overlap = {overlap}")
-
-                        if not overlap:
-                            self.tissue_coords[new_index] = {'name': data['name'], 'coords': new_coords.tolist()}
-                            no_overlaps = True
-                        else:
-                            #If overlaps are found, generate a new offset and try again. 
-                            offsets = np.random.uniform(coord_shifts[0], coord_shifts[1], size=(3,))
-                            attempts += 1
-                        
-                    if attempts >= packing_attempts:
-                        logging.error(f"Unable to resolve disordered packing after {packing_attempts} attempts. Reduce the number of cells or increase packing attempts.")
-                        sys.exit(1)
                              
 class MatrixConstructor:
     """
@@ -355,12 +289,10 @@ class MatrixConstructor:
                 logging.info(f"Currently fitting '{self.simulation_type}' object on a matrix...")
                 print(f"INFO: Matrix is set to '{self.matrix_on_off}'. Building the matrix object. ")              
                 self.build_matrix_cell()
-            if self.matrix_on_off == "on" and self.simulation_type == "tissue" and self.tissue_packing != "disordered":
+            if self.matrix_on_off == "on" and self.simulation_type == "tissue":
                 logging.info(f"Currently fitting '{self.simulation_type}' object on a matrix...")
                 print(f"INFO: Matrix is set to '{self.matrix_on_off}'. Building the matrix object. ")             
                 self.build_matrix_tissue()
-            if self.matrix_on_off == "on" and self.simulation_type == "tissue" and self.tissue_packing == "disordered":
-                logging.error("Disordered tissue packing currently is not supported with a matrix. Change the packing type or set the matrix to 'off'.")
                 sys.exit(1)           
                 
     def build_matrix_cell(self):
