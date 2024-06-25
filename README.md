@@ -6,11 +6,9 @@
 
 ## CellSimGMX
 
+**Deprecated repo. For latest code and documentation, see: [https://github.com/Vattulainen-Group/gmx_CellModel/wiki](Vattulainen group)**
+
 This is a repo for the CellSimGMX project. Only basic Python modules (e.g. numpy, matplotlib) are necessary to use the toolkit. Gromacs is solely used to run simulations, and not for input file generation. This would allow compatability with other MD engines through coordinate and topology conversion.
-
-**THIS IS THE DEVELOPMENT BRANCH! Changes will be merged into the master branch if stable/functional**
-**Do not blindly merge development with master!**
-
 ## Documentation/installation
 
 Note: documentation is currently bcuilt from the master branch. 
